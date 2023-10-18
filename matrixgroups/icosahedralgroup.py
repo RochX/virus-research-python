@@ -1,4 +1,5 @@
 import sympy as sp
+from matrixgroups import matrixfunctions
 
 ICO = [
     sp.Matrix([
@@ -422,3 +423,7 @@ ICO = [
         [0, 0, 0, -1, 0, 0],
         [0, 0, 0, 0, 0, -1]])
 ]
+
+
+def orbitOfVector(vector):
+    return matrixfunctions.orbitOfVector(ICO, vector)
