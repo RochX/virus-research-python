@@ -1,5 +1,5 @@
 import sympy as sp
-import virusconfigurations
+from virusdata import virusconfigurations
 
 if __name__ == "__main__":
     sp.init_printing()
