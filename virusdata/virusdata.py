@@ -72,3 +72,19 @@ configs[52] = {BASE_STR: 2 * Dinv * f, TRANSLATION_STR:  s}
 configs[53] = {BASE_STR: f, TRANSLATION_STR:  s}
 configs[54] = {BASE_STR: 2 * Dinv * Dinv * f, TRANSLATION_STR:  s}
 configs[55] = {BASE_STR: Dinv * f, TRANSLATION_STR:  s}
+
+
+def getGenerators(tuple):
+    generators = []
+    for index, curr in enumerate(tuple):
+        # add translation if it doesn't exist
+        if index == 0:
+            generators.append(configs[curr][TRANSLATION_STR])
+
+        # check if the translation vectors match
+        if configs[curr][TRANSLATION_STR] != generators[0]:
+            raise ValueError(f"Translation vectors of {curr} and {tuple[0]} do not match.")
+
+        generators.append(configs[curr][BASE_STR])
+
+    return generators
