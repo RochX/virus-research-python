@@ -427,3 +427,11 @@ ICO = [
 
 def orbitOfVector(vector):
     return matrixfunctions.orbitOfVector(ICO, vector)
+
+
+def orbitsOfVectors(vector_list):
+    orbits = []
+    for vector in vector_list:
+        orbits.append(orbitOfVector(vector))
+
+    return orbits
