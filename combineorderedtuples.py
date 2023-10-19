@@ -1,5 +1,6 @@
 import sympy as sp
 import itertools
+import multiprocessing
 from tqdm.auto import tqdm
 from virusdata import virusdata
 from matrixgroups import icosahedralgroup, a4group, d10group, d6group
@@ -54,12 +55,7 @@ def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_des
     if curr_cols == len(orbits_pairs):
         return prevCentralizer, prevB0, prevB1
 
-    if curr_cols == 0:
-        orbit_iter = tqdm(orbits_pairs[curr_cols], desc=tqdm_desc)
-    else:
-        orbit_iter = orbits_pairs[curr_cols]
-
-    for pair in orbit_iter:
+    for pair in orbits_pairs[curr_cols]:
         v0, v1 = pair
         B0 = prevB0.col_insert(curr_cols, v0)
         B1 = prevB1.col_insert(curr_cols, v1)
@@ -83,14 +79,37 @@ def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_des
 def findTransition(start_tuple, end_tuple, centralizer):
     orbits_pairs = findMultipleOrbitPairs(start_tuple, end_tuple, centralizer)
 
-    total_B0 = 1
-    for pairs in orbits_pairs:
-        total_B0 *= len(pairs)
+    results = []
+    pbar = tqdm(total=len(orbits_pairs[0]), desc=f"Finding transitions for {start_tuple} --> {end_tuple}")
 
-    return findTransitionHelper(centralizer, sp.Matrix([]), sp.Matrix([]), orbits_pairs, tqdm_desc=f"Find transition {start_tuple} --> {end_tuple}")
+    # this function is called when a parallel process is finished
+    def collectResult(result):
+        pbar.update(1)
+        pbar.refresh()
+        if result != (None, None, None):
+            results.append((start_tuple,) + (end_tuple,) + result)
 
+    with multiprocessing.Pool() as pool:
+        for translation_pair in orbits_pairs[0]:
+            t0, t1 = translation_pair
+            B0 = sp.Matrix([]).col_insert(0, t0)
+            B1 = sp.Matrix([]).col_insert(0, t1)
+            pool.apply_async(findTransitionHelper, args=(centralizer, B0, B1, orbits_pairs), callback=collectResult)
+
+        pool.close()
+        pool.join()
+        pbar.close()
+        return results
 
 if __name__ == "__main__":
     sp.init_printing()
 
-    sp.pprint(findTransition([1, 1], [2, 3], d6group.centralizer()))
+    start_tuple = [10]
+    end_tuple = [27]
+
+    transitions = findTransition(start_tuple, end_tuple, a4group.centralizer())
+    for res in transitions:
+        sp.pprint(res)
+        print()
+
+    print(f"Number of transitions for {start_tuple} --> {end_tuple} is {len(transitions)}")
