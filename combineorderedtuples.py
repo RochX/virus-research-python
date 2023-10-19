@@ -5,10 +5,12 @@ from virusdata import virusdata
 from matrixgroups import icosahedralgroup, a4group, d10group, d6group
 
 
+# checks if a sympy equation is either true or solvable
 def eqTrueOrSolvable(eq):
     return eq == True or len(sp.solve(eq)) > 0
 
 
+# finds what pairs of vectors can be solved by Tv_0 = v_1 while looping over their (ICO) orbits
 def findOrbitPairs(orbit0, orbit1, centralizer, tqdm_desc=""):
     vector_pairs = []
     if tqdm_desc != "":
@@ -22,6 +24,7 @@ def findOrbitPairs(orbit0, orbit1, centralizer, tqdm_desc=""):
     return vector_pairs
 
 
+# runs findOrbitPairs on multiple generators at once
 def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
     assert (type(start_tuple) == type(end_tuple))
     if type(start_tuple) is tuple:
@@ -42,6 +45,8 @@ def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
     return orbits_pairs
 
 
+# recursive helper function for finding transitions
+# builds up the columns of B0 and B1 in a depth first manner
 def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_desc=""):
     curr_cols = prevB0.shape[1]
     assert (prevB0.shape[1] == prevB1.shape[1])
@@ -74,6 +79,7 @@ def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_des
     return None, None, None
 
 
+# find a transition from (n_1, n_2, ..., n_k) to (m_1, m_2, ..., m_k)
 def findTransition(start_tuple, end_tuple, centralizer):
     orbits_pairs = findMultipleOrbitPairs(start_tuple, end_tuple, centralizer)
 
