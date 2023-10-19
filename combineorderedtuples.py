@@ -27,9 +27,12 @@ def findOrbitPairs(orbit0, orbit1, centralizer, tqdm_desc=""):
 
 # runs findOrbitPairs on multiple generators at once
 def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
-    assert (type(start_tuple) == type(end_tuple))
-    if type(start_tuple) is tuple:
+    # check whether start_tuple and end_tuple are same length
+    # comparing two ints should count has same length even though len(<int>) does not work
+    try:
         assert len(start_tuple) == len(end_tuple)
+    except TypeError:
+        assert type(start_tuple) == type(end_tuple)
 
     # get generators from the table
     start_generators = virusdata.getGenerators(start_tuple)
