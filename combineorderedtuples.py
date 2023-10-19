@@ -101,6 +101,7 @@ def findTransition(start_tuple, end_tuple, centralizer):
         pbar.close()
         return results
 
+
 if __name__ == "__main__":
     sp.init_printing()
 
