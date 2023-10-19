@@ -12,18 +12,18 @@ def eqTrueOrSolvable(eq):
 def findOrbitPairs(orbit0, orbit1, centralizer, tqdm_desc=""):
     vector_pairs = []
     if tqdm_desc != "":
-        pair_iter = tqdm(itertools.product(orbit0, orbit1), desc=tqdm_desc, total=len(orbit0)*len(orbit1))
+        pair_iter = tqdm(itertools.product(orbit0, orbit1), desc=tqdm_desc, total=len(orbit0) * len(orbit1))
     else:
         pair_iter = itertools.product(orbit0, orbit1)
     for v0, v1 in pair_iter:
-        if eqTrueOrSolvable(sp.Eq(centralizer*v0, v1)):
+        if eqTrueOrSolvable(sp.Eq(centralizer * v0, v1)):
             vector_pairs.append((v0, v1))
 
     return vector_pairs
 
 
 def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
-    assert(type(start_tuple) == type(end_tuple))
+    assert (type(start_tuple) == type(end_tuple))
     if type(start_tuple) is tuple:
         assert len(start_tuple) == len(end_tuple)
 
@@ -42,6 +42,38 @@ def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
     return orbits_pairs
 
 
+def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_desc=""):
+    curr_cols = prevB0.shape[1]
+    assert (prevB0.shape[1] == prevB1.shape[1])
+
+    if curr_cols == len(orbits_pairs):
+        return prevCentralizer, prevB0, prevB1
+
+    if curr_cols == 0:
+        orbit_iter = tqdm(orbits_pairs[curr_cols], desc=tqdm_desc)
+    else:
+        orbit_iter = orbits_pairs[curr_cols]
+
+    for pair in orbit_iter:
+        v0, v1 = pair
+        B0 = prevB0.col_insert(curr_cols, v0)
+        B1 = prevB1.col_insert(curr_cols, v1)
+        curr_eq = sp.Eq(prevCentralizer * B0, B1)
+        if eqTrueOrSolvable(curr_eq):
+            curr_solution = sp.solve(curr_eq)
+            if len(curr_solution) == 0:
+                curr_centralizer = prevCentralizer
+            else:
+                curr_centralizer = prevCentralizer.subs(curr_solution.items())
+
+            if curr_centralizer.det() != 0:
+                curr_centralizer, B0, B1 = findTransitionHelper(curr_centralizer, B0, B1, orbits_pairs)
+                if curr_centralizer is not None and B0.shape[1] == len(orbits_pairs):
+                    return curr_centralizer, B0, B1
+
+    return None, None, None
+
+
 def findTransition(start_tuple, end_tuple, centralizer):
     orbits_pairs = findMultipleOrbitPairs(start_tuple, end_tuple, centralizer)
 
@@ -49,26 +81,10 @@ def findTransition(start_tuple, end_tuple, centralizer):
     for pairs in orbits_pairs:
         total_B0 *= len(pairs)
 
-    # create B0 and B1
-    for pairs in tqdm(itertools.product(*orbits_pairs), desc=f"{start_tuple} --> {end_tuple}", total=total_B0):
-        B0, B1 = pairs[0]
-        for index, pair in enumerate(pairs[1:]):
-            v0, v1 = pair
-            B0 = B0.col_insert(index+1, v0)
-            B1 = B1.col_insert(index+1, v1)
-
-        transition_eq = sp.Eq(centralizer*B0, B1)
-
-        if eqTrueOrSolvable(transition_eq):
-            solution = sp.solve(transition_eq)
-            transition = centralizer.subs(solution.items())
-            if transition.det() != 0:
-                return transition, B0, B1
-
-    return None, None, None
+    return findTransitionHelper(centralizer, sp.Matrix([]), sp.Matrix([]), orbits_pairs, tqdm_desc=f"Find transition {start_tuple} --> {end_tuple}")
 
 
 if __name__ == "__main__":
     sp.init_printing()
 
-    sp.pprint(findTransition([10], [27], d6group.centralizer()))
+    sp.pprint(findTransition([1, 1], [2, 3], d6group.centralizer()))
