@@ -23,7 +23,9 @@ def findOrbitPairs(orbit0, orbit1, centralizer, tqdm_desc=""):
 
 
 def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
-    assert len(start_tuple) == len(end_tuple)
+    assert(type(start_tuple) == type(end_tuple))
+    if type(start_tuple) is tuple:
+        assert len(start_tuple) == len(end_tuple)
 
     # get generators from the table
     start_generators = virusdata.getGenerators(start_tuple)
@@ -40,28 +42,33 @@ def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
     return orbits_pairs
 
 
+def findTransition(start_tuple, end_tuple, centralizer):
+    orbits_pairs = findMultipleOrbitPairs(start_tuple, end_tuple, centralizer)
+
+    total_B0 = 1
+    for pairs in orbits_pairs:
+        total_B0 *= len(pairs)
+
+    # create B0 and B1
+    for pairs in tqdm(itertools.product(*orbits_pairs), desc=f"{start_tuple} --> {end_tuple}", total=total_B0):
+        B0, B1 = pairs[0]
+        for index, pair in enumerate(pairs[1:]):
+            v0, v1 = pair
+            B0 = B0.col_insert(index+1, v0)
+            B1 = B1.col_insert(index+1, v1)
+
+        transition_eq = sp.Eq(centralizer*B0, B1)
+
+        if eqTrueOrSolvable(transition_eq):
+            solution = sp.solve(transition_eq)
+            transition = centralizer.subs(solution.items())
+            if transition.det() != 0:
+                return transition, B0, B1
+
+    return None, None, None
+
+
 if __name__ == "__main__":
     sp.init_printing()
-    sp.pprint(virusdata.configs[12])
-    sp.pprint(a4group.centralizer())
-    sp.pprint(d10group.centralizer())
-    sp.pprint(d6group.centralizer())
 
-    # sp.pprint(virusdata.getGenerators((4, 5, 6, 7)))
-
-    BASE_STR = virusdata.BASE_STR
-    TRANSLATION_STR = virusdata.TRANSLATION_STR
-
-    # testOrbit0 = icosahedralgroup.orbitOfVector(virusdata.configs[36][TRANSLATION_STR])
-    # testOrbit1 = icosahedralgroup.orbitOfVector(virusdata.configs[36][TRANSLATION_STR])
-    #
-    # testPairs = findOrbitPairs(testOrbit0, testOrbit1, d6group.centralizer())
-    #
-    # sp.pprint(testPairs)
-    # sp.pprint(len(testPairs))
-
-    pairs = findMultipleOrbitPairs((1, 1), (2, 3), d6group.centralizer())
-
-    for index, lst in enumerate(pairs):
-        print(f"Pair list {index} with length {len(lst)}")
-        sp.pprint(lst[:10])
+    sp.pprint(findTransition([10], [27], d6group.centralizer()))
