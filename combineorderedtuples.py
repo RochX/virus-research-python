@@ -114,7 +114,7 @@ if __name__ == "__main__":
     # parser.add_argument("pickle_dir", help="Directory in which the files will be saved.")
     parser.add_argument("-c", "--centralizer", choices=centralizer_strings, required=True, help="Select the centralizer to be used.")
     cases_group = parser.add_mutually_exclusive_group(required=True)
-    cases_group.add_argument("--pt_ar", type=str, nargs=2, help="Input the numerical representations of the point arrays")
+    cases_group.add_argument("--pt-ar", type=str, nargs=2, help="Input the numerical representations of the point arrays")
     # cases_group.add_argument("--case_file")
     args = parser.parse_args()
 
