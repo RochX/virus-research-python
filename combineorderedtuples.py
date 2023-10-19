@@ -1,3 +1,4 @@
+import argparse
 import sympy as sp
 import itertools
 import multiprocessing
@@ -79,11 +80,11 @@ def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_des
 
 
 # find a transition from (n_1, n_2, ..., n_k) to (m_1, m_2, ..., m_k)
-def findTransition(start_tuple, end_tuple, centralizer):
+def findTransition(start_tuple, end_tuple, centralizer, centralizer_str):
     orbits_pairs = findMultipleOrbitPairs(start_tuple, end_tuple, centralizer)
 
     results = []
-    pbar = tqdm(total=len(orbits_pairs[0]), desc=f"Finding transitions for {start_tuple} --> {end_tuple}")
+    pbar = tqdm(total=len(orbits_pairs[0]), desc=f"Finding transitions for {start_tuple} --> {end_tuple} under {centralizer_str}")
 
     # this function is called when a parallel process is finished
     def collectResult(result):
@@ -108,12 +109,36 @@ def findTransition(start_tuple, end_tuple, centralizer):
 if __name__ == "__main__":
     sp.init_printing()
 
-    start_tuple = [10]
-    end_tuple = [27]
+    centralizer_strings = ["a4", "A4", "d10", "D10", "d6", "D6"]
+    parser = argparse.ArgumentParser(description="Finds icosahedral virus transitions between point arrays.")
+    # parser.add_argument("pickle_dir", help="Directory in which the files will be saved.")
+    parser.add_argument("-c", "--centralizer", choices=centralizer_strings, required=True, help="Select the centralizer to be used.")
+    cases_group = parser.add_mutually_exclusive_group(required=True)
+    cases_group.add_argument("--pt_ar", type=str, nargs=2, help="Input the numerical representations of the point arrays")
+    # cases_group.add_argument("--case_file")
+    args = parser.parse_args()
 
-    transitions = findTransition(start_tuple, end_tuple, a4group.centralizer())
-    for res in transitions:
-        sp.pprint(res)
-        print()
+    # get centralizer
+    centralizer_str = args.centralizer.upper()
+    centralizer = None
+    if centralizer_str == "A4":
+        centralizer = a4group.centralizer()
+    elif centralizer_str == "D10":
+        centralizer = d10group.centralizer()
+    elif centralizer_str == "D6":
+        centralizer = d6group.centralizer()
 
-    print(f"Number of transitions for {start_tuple} --> {end_tuple} is {len(transitions)}")
+    if args.pt_ar is not None:
+        def create_tuple(arg_str):
+            tup = map(int, arg_str.split(','))
+            return list(tup)
+
+        start_tuple, end_tuple = list(map(create_tuple, args.pt_ar))
+
+        transitions = findTransition(start_tuple, end_tuple, centralizer, centralizer_str)
+        for res in transitions:
+            sp.pprint(res)
+            print()
+
+        print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
+    # elif args.case_file is not None:
