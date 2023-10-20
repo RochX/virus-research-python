@@ -4,6 +4,7 @@ import itertools
 import multiprocessing
 import re
 import pickle
+import time
 from tqdm.auto import tqdm
 from virusdata import virusdata
 from matrixgroups import icosahedralgroup, a4group, d10group, d6group
@@ -151,6 +152,7 @@ if __name__ == "__main__":
         return list(tup)
 
     if args.pt_ar is not None:
+        stime = time.time()
         start_tuple, end_tuple = list(map(create_tuple, args.pt_ar))
 
         transitions = findTransition(start_tuple, end_tuple, centralizer, centralizer_str)
@@ -160,7 +162,10 @@ if __name__ == "__main__":
 
         print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
         save_transitions(args.pickle_dir, start_tuple, end_tuple, centralizer_str, transitions)
+        etime = time.time()
+        print(f"Done in{etime - stime : .3f} seconds.")
     elif args.case_file is not None:
+        total_stime = time.time()
         cases = []
         with open(args.case_file, 'r') as read_file:
             for line in read_file.readlines():
@@ -171,10 +176,16 @@ if __name__ == "__main__":
 
         print(cases)
         for case in cases:
+            stime = time.time()
             start_tuple, end_tuple = case
 
             print(f"Starting case {start_tuple} --> {end_tuple}...")
             transitions = findTransition(start_tuple, end_tuple, centralizer, centralizer_str)
             print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
             save_transitions(args.pickle_dir, start_tuple, end_tuple, centralizer_str, transitions)
+            etime = time.time()
+            print(f"Case {start_tuple} --> {end_tuple} done in{etime - stime : .3f} seconds.")
             print()
+
+        total_etime = time.time()
+        print(f"All cases completed in{total_etime - total_stime : .3f} seconds.")
