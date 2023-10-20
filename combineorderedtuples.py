@@ -63,6 +63,11 @@ def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_des
         v0, v1 = pair
         B0 = prevB0.col_insert(curr_cols, v0)
         B1 = prevB1.col_insert(curr_cols, v1)
+
+        # check for linear independence within the columns of B0 and B1
+        if B0.rank() != curr_cols+1 or B1.rank() != curr_cols+1:
+            continue
+
         curr_eq = sp.Eq(prevCentralizer * B0, B1)
         if eqTrueOrSolvable(curr_eq):
             curr_solution = sp.solve(curr_eq)
