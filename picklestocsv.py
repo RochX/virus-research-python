@@ -30,7 +30,7 @@ if __name__ == "__main__":
         start, end, centralizer_str = case
         results_dict.setdefault(start, {})
         results_dict[start].setdefault(end, {})
-        with open(pickle_file, 'rb') as read_pickle:
+        with open(join(args.pickle_dir, pickle_file), 'rb') as read_pickle:
             transitions = pickle.load(read_pickle)
 
             # eventually it may be useful to replace this line with the commented one below:
