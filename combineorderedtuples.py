@@ -2,6 +2,8 @@ import argparse
 import sympy as sp
 import itertools
 import multiprocessing
+import re
+import pickle
 from tqdm.auto import tqdm
 from virusdata import virusdata
 from matrixgroups import icosahedralgroup, a4group, d10group, d6group
@@ -111,12 +113,22 @@ def findTransition(start_tuple, end_tuple, centralizer, centralizer_str):
         return results
 
 
+def pickle_file_str(pickle_dir, start_tuple, end_tuple, centralizer_string):
+    return re.sub('[()\[\] ]', '', pickle_dir + f"{start_tuple}_to_{end_tuple}_{centralizer_string}.pickle")
+
+
+def save_transitions(pickle_dir, start_tuple, end_tuple, centralizer_string, transitions):
+    with open(pickle_file_str(pickle_dir, start_tuple, end_tuple, centralizer_string), 'wb') as write_file:
+        pickle.dump(transitions, write_file, protocol=pickle.HIGHEST_PROTOCOL)
+        print(f"Saved {start_tuple} --> {end_tuple} under {centralizer_string} to {write_file.name}")
+
+
 if __name__ == "__main__":
     sp.init_printing()
 
     centralizer_strings = ["a4", "A4", "d10", "D10", "d6", "D6"]
-    parser = argparse.ArgumentParser(description="Finds icosahedral virus transitions between point arrays.")
-    # parser.add_argument("pickle_dir", help="Directory in which the files will be saved.")
+    parser = argparse.ArgumentParser(description="Finds icosahedral virus transitions between point arrays.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-d", "--pickle_dir", default="./", help="Directory in which the files will be saved. Defaults to current working directory.")
     parser.add_argument("-c", "--centralizer", choices=centralizer_strings, required=True, help="Select the centralizer to be used.")
     cases_group = parser.add_mutually_exclusive_group(required=True)
     cases_group.add_argument("--pt-ar", type=str, nargs=2, help="Input the numerical representations of the point arrays")
@@ -146,4 +158,5 @@ if __name__ == "__main__":
             print()
 
         print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
+        save_transitions(args.pickle_dir, start_tuple, end_tuple, centralizer_str, transitions)
     # elif args.case_file is not None:
