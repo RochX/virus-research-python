@@ -132,7 +132,7 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--centralizer", type=str.lower, choices=centralizer_strings, required=True, help="Select the centralizer to be used.")
     cases_group = parser.add_mutually_exclusive_group(required=True)
     cases_group.add_argument("--pt-ar", type=str, nargs=2, help="Input the numerical representations of the point arrays")
-    # cases_group.add_argument("--case_file")
+    cases_group.add_argument("--case-file")
     args = parser.parse_args()
 
     # get centralizer
@@ -145,11 +145,12 @@ if __name__ == "__main__":
     elif centralizer_str == "D6":
         centralizer = d6group.centralizer()
 
-    if args.pt_ar is not None:
-        def create_tuple(arg_str):
-            tup = map(int, arg_str.split(','))
-            return list(tup)
 
+    def create_tuple(arg_str):
+        tup = map(int, arg_str.split(','))
+        return list(tup)
+
+    if args.pt_ar is not None:
         start_tuple, end_tuple = list(map(create_tuple, args.pt_ar))
 
         transitions = findTransition(start_tuple, end_tuple, centralizer, centralizer_str)
@@ -159,4 +160,21 @@ if __name__ == "__main__":
 
         print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
         save_transitions(args.pickle_dir, start_tuple, end_tuple, centralizer_str, transitions)
-    # elif args.case_file is not None:
+    elif args.case_file is not None:
+        cases = []
+        with open(args.case_file, 'r') as read_file:
+            for line in read_file.readlines():
+                # this is assuming each line in file looks like:
+                # n_1, n_2, ..., n_k > m_1, m_2, ..., m_l
+                start_tuple, end_tuple = list(map(create_tuple, line.strip().split(' > ')))
+                cases.append((start_tuple, end_tuple))
+
+        print(cases)
+        for case in cases:
+            start_tuple, end_tuple = case
+
+            print(f"Starting case {start_tuple} --> {end_tuple}...")
+            transitions = findTransition(start_tuple, end_tuple, centralizer, centralizer_str)
+            print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
+            save_transitions(args.pickle_dir, start_tuple, end_tuple, centralizer_str, transitions)
+            print()
