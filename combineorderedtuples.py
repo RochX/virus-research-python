@@ -126,10 +126,10 @@ def save_transitions(pickle_dir, start_tuple, end_tuple, centralizer_string, tra
 if __name__ == "__main__":
     sp.init_printing()
 
-    centralizer_strings = ["a4", "A4", "d10", "D10", "d6", "D6"]
+    centralizer_strings = ["a4", "d10", "d6"]
     parser = argparse.ArgumentParser(description="Finds icosahedral virus transitions between point arrays.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-d", "--pickle_dir", default="./", help="Directory in which the files will be saved. Defaults to current working directory.")
-    parser.add_argument("-c", "--centralizer", choices=centralizer_strings, required=True, help="Select the centralizer to be used.")
+    parser.add_argument("-c", "--centralizer", type=str.lower, choices=centralizer_strings, required=True, help="Select the centralizer to be used.")
     cases_group = parser.add_mutually_exclusive_group(required=True)
     cases_group.add_argument("--pt-ar", type=str, nargs=2, help="Input the numerical representations of the point arrays")
     # cases_group.add_argument("--case_file")
