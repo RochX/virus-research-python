@@ -3,6 +3,7 @@ import sympy as sp
 import itertools
 import multiprocessing
 import re
+import os
 from os.path import exists as file_exists
 import pickle
 import time
@@ -16,8 +17,33 @@ def eqTrueOrSolvable(eq):
     return eq == True or len(sp.solve(eq)) > 0
 
 
+def getVectorPairFilename(dir, start_num, end_num, centralizer):
+    if centralizer == d6group.centralizer():
+        centralizer_str = "D6"
+    elif centralizer == d10group.centralizer():
+        centralizer_str = "D10"
+    elif centralizer == a4group.centralizer():
+        centralizer_str = "A4"
+    else:
+        raise ValueError("Centralizer is not A4, D10, or D6")
+
+    if dir[-1] != "/":
+        dir = dir + "/"
+
+    return dir + f"{start_num}_to_{end_num}_{centralizer_str}_pairs.pickle"
+
+
 # finds what pairs of vectors can be solved by Tv_0 = v_1 while looping over their (ICO) orbits
-def findOrbitPairs(orbit0, orbit1, centralizer, tqdm_desc=""):
+def findOrbitPairs(start_num, orbit0, end_num, orbit1, centralizer, tqdm_desc=""):
+    PAIR_DIRECTORY = "vector_pairs/"
+    vector_pair_filename = getVectorPairFilename(PAIR_DIRECTORY, start_num, end_num,  centralizer)
+
+    # if a vector pair file exists, return it
+    if start_num != -1 and file_exists(vector_pair_filename):
+        with open(vector_pair_filename, 'rb') as pickle_file:
+            print(tqdm_desc + " returned from file.", flush=True)
+            return pickle.load(pickle_file)
+
     vector_pairs = []
     if tqdm_desc != "":
         pair_iter = tqdm(itertools.product(orbit0, orbit1), desc=tqdm_desc, total=len(orbit0) * len(orbit1))
@@ -26,6 +52,15 @@ def findOrbitPairs(orbit0, orbit1, centralizer, tqdm_desc=""):
     for v0, v1 in pair_iter:
         if eqTrueOrSolvable(sp.Eq(centralizer * v0, v1)):
             vector_pairs.append((v0, v1))
+
+    # write vector pairs to file
+    if start_num != -1:
+        # create the directory if it doesn't exist
+        if not os.path.exists(PAIR_DIRECTORY):
+            os.makedirs(PAIR_DIRECTORY)
+
+        with open(vector_pair_filename, 'wb') as pickle_file:
+            pickle.dump(vector_pairs, pickle_file, protocol=pickle.HIGHEST_PROTOCOL)
 
     return vector_pairs
 
@@ -47,9 +82,9 @@ def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
     start_orbits = icosahedralgroup.orbitsOfVectors(start_generators)
     end_orbits = icosahedralgroup.orbitsOfVectors(end_generators)
 
-    orbits_pairs = [findOrbitPairs(start_orbits[0], end_orbits[0], centralizer, tqdm_desc="translation")]
+    orbits_pairs = [findOrbitPairs(-1, start_orbits[0], -1, end_orbits[0], centralizer, tqdm_desc="translation")]
     for start_num, start_orbit, end_num, end_orbit in zip(start_tuple, start_orbits[1:], end_tuple, end_orbits[1:]):
-        orbits_pairs.append(findOrbitPairs(start_orbit, end_orbit, centralizer, tqdm_desc=f"{start_num} --> {end_num}"))
+        orbits_pairs.append(findOrbitPairs(start_num, start_orbit, end_num, end_orbit, centralizer, tqdm_desc=f"{start_num} --> {end_num}"))
 
     return orbits_pairs
 
