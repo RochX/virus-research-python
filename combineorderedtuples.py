@@ -3,6 +3,7 @@ import sympy as sp
 import itertools
 import multiprocessing
 import re
+from os.path import exists as file_exists
 import pickle
 import time
 from tqdm.auto import tqdm
@@ -115,6 +116,10 @@ def findTransition(start_tuple, end_tuple, centralizer, centralizer_str):
 
 
 def pickle_file_str(pickle_dir, start_tuple, end_tuple, centralizer_string):
+    # add / to directory string if it is not there
+    if pickle_dir[-1] != "/":
+        pickle_dir = pickle_dir + "/"
+
     return re.sub('[()\[\] ]', '', pickle_dir + f"{start_tuple}_to_{end_tuple}_{centralizer_string}.pickle")
 
 
@@ -131,6 +136,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Finds icosahedral virus transitions between point arrays.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-d", "--pickle_dir", default="./", help="Directory in which the files will be saved. Defaults to current working directory.")
     parser.add_argument("-c", "--centralizer", type=str.lower, choices=centralizer_strings, required=True, help="Select the centralizer to be used.")
+    parser.add_argument("-r", "--redo", action="store_true", help="Does all cases given, even if they have already been done before.")
     cases_group = parser.add_mutually_exclusive_group(required=True)
     cases_group.add_argument("--pt-ar", type=str, nargs=2, help="Input the numerical representations of the point arrays")
     cases_group.add_argument("--case-file")
@@ -178,6 +184,13 @@ if __name__ == "__main__":
         for case in cases:
             stime = time.time()
             start_tuple, end_tuple = case
+
+            pickle_filename = pickle_file_str(args.pickle_dir, start_tuple, end_tuple, centralizer_str)
+
+            # if we are not redoing cases skip it if it's already done
+            if not args.redo and file_exists(pickle_filename):
+                print(f"Case {start_tuple} --> {end_tuple} is already done in {pickle_filename}\n")
+                continue
 
             print(f"Starting case {start_tuple} --> {end_tuple}...")
             transitions = findTransition(start_tuple, end_tuple, centralizer, centralizer_str)
