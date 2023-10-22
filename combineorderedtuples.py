@@ -7,6 +7,7 @@ import os
 from os.path import exists as file_exists
 import pickle
 import time
+import sys
 from tqdm.auto import tqdm
 from virusdata import virusdata
 from matrixgroups import icosahedralgroup, a4group, d10group, d6group
@@ -37,6 +38,9 @@ def getVectorPairFilename(dir, start_num, end_num, centralizer):
 def findOrbitPairs(start_num, orbit0, end_num, orbit1, centralizer, tqdm_desc=""):
     PAIR_DIRECTORY = "vector_pairs/"
     vector_pair_filename = getVectorPairFilename(PAIR_DIRECTORY, start_num, end_num,  centralizer)
+
+    # force stdout to flush first, so an empty tqdm bar doesn't appear before the stdout print
+    sys.stdout.flush()
 
     # if a vector pair file exists, return it
     if start_num != -1 and file_exists(vector_pair_filename):
