@@ -83,7 +83,7 @@ def getGenerators(tuple):
 
         # check if the translation vectors match
         if configs[curr][TRANSLATION_STR] != generators[0]:
-            raise ValueError(f"Translation vectors of {curr} and {tuple[0]} do not match.")
+            raise ValueError(f"Translation vectors of {curr} and {tuple[0]} do not match. The point array attempted is {tuple}.")
 
         generators.append(configs[curr][BASE_STR])
 
