@@ -163,7 +163,8 @@ cython_debug/
 **.pickle
 **.pkl
 
-# ignore any text files that represent test cases
+# ignore any text files that represent test cases or test case results
+**.csv
 **.txt
 
 # ignore any nohup output
