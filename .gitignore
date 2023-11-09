@@ -162,3 +162,9 @@ cython_debug/
 # ignore any python pickle files (serialized python objects)
 **.pickle
 **.pkl
+
+# ignore any text files that represent test cases
+**.txt
+
+# ignore any nohup output
+**.out
