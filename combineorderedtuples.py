@@ -162,27 +162,24 @@ def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
 
 def get_centralizer_str_from_matrix(centralizer):
     if centralizer == d6group.centralizer():
-        centralizer_str = "D6"
+        return "D6"
     elif centralizer == d10group.centralizer():
-        centralizer_str = "D10"
+        return "D10"
     elif centralizer == a4group.centralizer():
-        centralizer_str = "A4"
+        return "A4"
     else:
         raise ValueError("Centralizer is not A4, D10, or D6")
 
-    return centralizer_str
-
 
 def get_centralizer_from_str(centralizer_str):
-    centralizer = None
     if centralizer_str == "A4":
-        centralizer = a4group.centralizer()
+        return a4group.centralizer()
     elif centralizer_str == "D10":
-        centralizer = d10group.centralizer()
+        return d10group.centralizer()
     elif centralizer_str == "D6":
-        centralizer = d6group.centralizer()
-
-    return centralizer
+        return d6group.centralizer()
+    else:
+        raise ValueError("Centralizer String is not A4, D10, or D6")
 
 
 def get_pickle_filename(pickle_dir, start_tuple, end_tuple, centralizer_string):
