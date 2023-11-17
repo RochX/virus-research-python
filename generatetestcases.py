@@ -4,11 +4,11 @@ from permutetestcases import tuple_to_case
 
 
 def main():
-    writeOneBaseCases()
-    writeTwoBaseCases()
+    write_one_base_cases()
+    write_two_base_cases()
 
 
-def writeOneBaseCases():
+def write_one_base_cases():
     print("Writing One Base Cases...")
     with open('one_base_cases.txt', 'w') as one_base_file:
         for a, b in itertools.product(range(1, 56), range(1, 56)):
@@ -17,12 +17,12 @@ def writeOneBaseCases():
     print("Done.")
 
 
-def writeTwoBaseCases():
-    two_base_point_arrays = getAllTwoBasePointArrays()
+def write_two_base_cases():
+    two_base_point_arrays = get_all_two_base_point_arrays()
     print("Writing Two Base Cases...")
     with open('two_base_cases.txt', 'w') as two_base_file:
         for p0, p1 in itertools.product(two_base_point_arrays, two_base_point_arrays):
-            if twoBasePointArrayIsRedundant(p0, p1):
+            if two_base_point_array_is_redundant(p0, p1):
                 continue
 
             two_base_file.write(tuple_to_case(p0, p1))
@@ -31,16 +31,16 @@ def writeTwoBaseCases():
     print("Done.")
 
 
-def getAllTwoBasePointArrays():
+def get_all_two_base_point_arrays():
     two_base_point_arrays = []
     for a, b in itertools.product(range(1, 56), range(1, 56)):
-        if isValidPointArray((a, b)):
+        if is_valid_point_array((a, b)):
             two_base_point_arrays.append((a, b))
 
     return two_base_point_arrays
 
 
-def twoBasePointArrayIsRedundant(p0, p1):
+def two_base_point_array_is_redundant(p0, p1):
     a, b = p0
     c, d = p1
 
@@ -59,7 +59,7 @@ def twoBasePointArrayIsRedundant(p0, p1):
     return False
 
 
-def isValidPointArray(point_array):
+def is_valid_point_array(point_array):
     try:
         virusdata.getGenerators(point_array)
         return True

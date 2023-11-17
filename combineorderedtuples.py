@@ -14,11 +14,11 @@ from matrixgroups import icosahedralgroup, a4group, d10group, d6group
 
 
 # checks if a sympy equation is either true or solvable
-def eqTrueOrSolvable(eq):
+def equation_is_true_or_solvable(eq):
     return eq == True or len(sp.solve(eq)) > 0
 
 
-def getVectorPairFilename(dir, start_num, end_num, centralizer):
+def get_vector_pair_filename(dir, start_num, end_num, centralizer):
     if centralizer == d6group.centralizer():
         centralizer_str = "D6"
     elif centralizer == d10group.centralizer():
@@ -35,9 +35,9 @@ def getVectorPairFilename(dir, start_num, end_num, centralizer):
 
 
 # finds what pairs of vectors can be solved by Tv_0 = v_1 while looping over their (ICO) orbits
-def findOrbitPairs(start_num, orbit0, end_num, orbit1, centralizer, tqdm_desc=""):
+def find_orbit_pairs(start_num, orbit0, end_num, orbit1, centralizer, tqdm_desc=""):
     PAIR_DIRECTORY = "vector_pairs/"
-    vector_pair_filename = getVectorPairFilename(PAIR_DIRECTORY, start_num, end_num,  centralizer)
+    vector_pair_filename = get_vector_pair_filename(PAIR_DIRECTORY, start_num, end_num, centralizer)
 
     # force stdout to flush first, so an empty tqdm bar doesn't appear before the stdout print
     sys.stdout.flush()
@@ -54,7 +54,7 @@ def findOrbitPairs(start_num, orbit0, end_num, orbit1, centralizer, tqdm_desc=""
     else:
         pair_iter = itertools.product(orbit0, orbit1)
     for v0, v1 in pair_iter:
-        if eqTrueOrSolvable(sp.Eq(centralizer * v0, v1)):
+        if equation_is_true_or_solvable(sp.Eq(centralizer * v0, v1)):
             vector_pairs.append((v0, v1))
 
     # write vector pairs to file
@@ -70,7 +70,7 @@ def findOrbitPairs(start_num, orbit0, end_num, orbit1, centralizer, tqdm_desc=""
 
 
 # runs findOrbitPairs on multiple generators at once
-def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
+def find_multiple_orbit_pairs(start_tuple, end_tuple, centralizer):
     # check whether start_tuple and end_tuple are same length
     # comparing two ints should count has same length even though len(<int>) does not work
     try:
@@ -82,7 +82,7 @@ def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
     start_generators = virusdata.getGenerators(start_tuple)
     end_generators = virusdata.getGenerators(end_tuple)
 
-    def getTranslationStr(translation_vector):
+    def get_translation_vector_str(translation_vector):
         if translation_vector == virusdata.f:
             return "f"
         elif translation_vector == virusdata.b:
@@ -92,23 +92,23 @@ def findMultipleOrbitPairs(start_tuple, end_tuple, centralizer):
         else:
             raise ValueError("Vector is not a translation vector")
 
-    start_translation_str = getTranslationStr(start_generators[0])
-    end_translation_str = getTranslationStr(end_generators[0])
+    start_translation_str = get_translation_vector_str(start_generators[0])
+    end_translation_str = get_translation_vector_str(end_generators[0])
 
     # create orbits
     start_orbits = icosahedralgroup.orbitsOfVectors(start_generators)
     end_orbits = icosahedralgroup.orbitsOfVectors(end_generators)
 
-    orbits_pairs = [findOrbitPairs(start_translation_str, start_orbits[0], end_translation_str, end_orbits[0], centralizer, tqdm_desc=f"translation {start_translation_str} --> {end_translation_str}")]
+    orbits_pairs = [find_orbit_pairs(start_translation_str, start_orbits[0], end_translation_str, end_orbits[0], centralizer, tqdm_desc=f"translation {start_translation_str} --> {end_translation_str}")]
     for start_num, start_orbit, end_num, end_orbit in zip(start_tuple, start_orbits[1:], end_tuple, end_orbits[1:]):
-        orbits_pairs.append(findOrbitPairs(start_num, start_orbit, end_num, end_orbit, centralizer, tqdm_desc=f"{start_num} --> {end_num}"))
+        orbits_pairs.append(find_orbit_pairs(start_num, start_orbit, end_num, end_orbit, centralizer, tqdm_desc=f"{start_num} --> {end_num}"))
 
     return orbits_pairs
 
 
 # recursive helper function for finding transitions
 # builds up the columns of B0 and B1 in a depth first manner
-def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_desc=""):
+def find_transition_helper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_desc=""):
     curr_cols = prevB0.shape[1]
     assert (prevB0.shape[1] == prevB1.shape[1])
 
@@ -125,7 +125,7 @@ def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_des
             continue
 
         curr_eq = sp.Eq(prevCentralizer * B0, B1)
-        if eqTrueOrSolvable(curr_eq):
+        if equation_is_true_or_solvable(curr_eq):
             curr_solution = sp.solve(curr_eq)
             if len(curr_solution) == 0:
                 curr_centralizer = prevCentralizer
@@ -133,7 +133,7 @@ def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_des
                 curr_centralizer = prevCentralizer.subs(curr_solution.items())
 
             if curr_centralizer.det() != 0:
-                curr_centralizer, B0, B1 = findTransitionHelper(curr_centralizer, B0, B1, orbits_pairs)
+                curr_centralizer, B0, B1 = find_transition_helper(curr_centralizer, B0, B1, orbits_pairs)
                 if curr_centralizer is not None and B0.shape[1] == len(orbits_pairs):
                     return curr_centralizer, B0, B1
 
@@ -141,14 +141,14 @@ def findTransitionHelper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_des
 
 
 # find a transition from (n_1, n_2, ..., n_k) to (m_1, m_2, ..., m_k)
-def findTransition(start_tuple, end_tuple, centralizer, centralizer_str):
-    orbits_pairs = findMultipleOrbitPairs(start_tuple, end_tuple, centralizer)
+def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
+    orbits_pairs = find_multiple_orbit_pairs(start_tuple, end_tuple, centralizer)
 
     results = []
     pbar = tqdm(total=len(orbits_pairs[0]), desc=f"Finding transitions for {start_tuple} --> {end_tuple} under {centralizer_str}")
 
     # this function is called when a parallel process is finished
-    def collectResult(result):
+    def collect_result(result):
         pbar.update(1)
         pbar.refresh()
         if result != (None, None, None):
@@ -159,7 +159,7 @@ def findTransition(start_tuple, end_tuple, centralizer, centralizer_str):
             t0, t1 = translation_pair
             B0 = sp.Matrix([]).col_insert(0, t0)
             B1 = sp.Matrix([]).col_insert(0, t1)
-            pool.apply_async(findTransitionHelper, args=(centralizer, B0, B1, orbits_pairs), callback=collectResult)
+            pool.apply_async(find_transition_helper, args=(centralizer, B0, B1, orbits_pairs), callback=collect_result)
 
         pool.close()
         pool.join()
@@ -167,7 +167,7 @@ def findTransition(start_tuple, end_tuple, centralizer, centralizer_str):
         return results
 
 
-def pickle_file_str(pickle_dir, start_tuple, end_tuple, centralizer_string):
+def get_pickle_filename(pickle_dir, start_tuple, end_tuple, centralizer_string):
     # add / to directory string if it is not there
     if pickle_dir[-1] != "/":
         pickle_dir = pickle_dir + "/"
@@ -176,7 +176,7 @@ def pickle_file_str(pickle_dir, start_tuple, end_tuple, centralizer_string):
 
 
 def save_transitions(pickle_dir, start_tuple, end_tuple, centralizer_string, transitions):
-    with open(pickle_file_str(pickle_dir, start_tuple, end_tuple, centralizer_string), 'wb') as write_file:
+    with open(get_pickle_filename(pickle_dir, start_tuple, end_tuple, centralizer_string), 'wb') as write_file:
         pickle.dump(transitions, write_file, protocol=pickle.HIGHEST_PROTOCOL)
         print(f"Saved {start_tuple} --> {end_tuple} under {centralizer_string} to {write_file.name}")
 
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         stime = time.time()
         start_tuple, end_tuple = list(map(create_tuple, args.pt_ar))
 
-        transitions = findTransition(start_tuple, end_tuple, centralizer, centralizer_str)
+        transitions = find_transition(start_tuple, end_tuple, centralizer, centralizer_str)
         for res in transitions:
             sp.pprint(res)
             print()
@@ -237,7 +237,7 @@ if __name__ == "__main__":
             stime = time.time()
             start_tuple, end_tuple = case
 
-            pickle_filename = pickle_file_str(args.pickle_dir, start_tuple, end_tuple, centralizer_str)
+            pickle_filename = get_pickle_filename(args.pickle_dir, start_tuple, end_tuple, centralizer_str)
 
             # if we are not redoing cases skip it if it's already done
             if not args.redo and file_exists(pickle_filename):
@@ -245,7 +245,7 @@ if __name__ == "__main__":
                 continue
 
             print(f"Starting case {start_tuple} --> {end_tuple}...")
-            transitions = findTransition(start_tuple, end_tuple, centralizer, centralizer_str)
+            transitions = find_transition(start_tuple, end_tuple, centralizer, centralizer_str)
             print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
             save_transitions(args.pickle_dir, start_tuple, end_tuple, centralizer_str, transitions)
             etime = time.time()
