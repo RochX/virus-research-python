@@ -19,14 +19,7 @@ def equation_is_true_or_solvable(eq):
 
 
 def get_vector_pair_filename(dir, start_num, end_num, centralizer):
-    if centralizer == d6group.centralizer():
-        centralizer_str = "D6"
-    elif centralizer == d10group.centralizer():
-        centralizer_str = "D10"
-    elif centralizer == a4group.centralizer():
-        centralizer_str = "A4"
-    else:
-        raise ValueError("Centralizer is not A4, D10, or D6")
+    centralizer_str = get_centralizer_str_from_matrix(centralizer)
 
     if dir[-1] != "/":
         dir = dir + "/"
@@ -167,6 +160,31 @@ def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
         return results
 
 
+def get_centralizer_str_from_matrix(centralizer):
+    if centralizer == d6group.centralizer():
+        centralizer_str = "D6"
+    elif centralizer == d10group.centralizer():
+        centralizer_str = "D10"
+    elif centralizer == a4group.centralizer():
+        centralizer_str = "A4"
+    else:
+        raise ValueError("Centralizer is not A4, D10, or D6")
+
+    return centralizer_str
+
+
+def get_centralizer_from_str(centralizer_str):
+    centralizer = None
+    if centralizer_str == "A4":
+        centralizer = a4group.centralizer()
+    elif centralizer_str == "D10":
+        centralizer = d10group.centralizer()
+    elif centralizer_str == "D6":
+        centralizer = d6group.centralizer()
+
+    return centralizer
+
+
 def get_pickle_filename(pickle_dir, start_tuple, end_tuple, centralizer_string):
     # add / to directory string if it is not there
     if pickle_dir[-1] != "/":
@@ -196,13 +214,7 @@ if __name__ == "__main__":
 
     # get centralizer
     centralizer_str = args.centralizer.upper()
-    centralizer = None
-    if centralizer_str == "A4":
-        centralizer = a4group.centralizer()
-    elif centralizer_str == "D10":
-        centralizer = d10group.centralizer()
-    elif centralizer_str == "D6":
-        centralizer = d6group.centralizer()
+    centralizer = get_centralizer_from_str(centralizer_str)
 
 
     def create_tuple(arg_str):
