@@ -11,6 +11,7 @@ import sys
 from tqdm.auto import tqdm
 from virusdata import virusdata
 from matrixgroups import icosahedralgroup, centralizers
+from pickle_loader_saver import TransitionSaverLoader
 
 
 # checks if a sympy equation is either true or solvable
@@ -150,20 +151,6 @@ def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
         return results
 
 
-def get_pickle_filename(pickle_dir, start_tuple, end_tuple, centralizer_string):
-    # add / to directory string if it is not there
-    if pickle_dir[-1] != "/":
-        pickle_dir = pickle_dir + "/"
-
-    return re.sub('[()\[\] ]', '', pickle_dir + f"{start_tuple}_to_{end_tuple}_{centralizer_string}.pickle")
-
-
-def save_transitions(pickle_dir, start_tuple, end_tuple, centralizer_string, transitions):
-    with open(get_pickle_filename(pickle_dir, start_tuple, end_tuple, centralizer_string), 'wb') as write_file:
-        pickle.dump(transitions, write_file, protocol=pickle.HIGHEST_PROTOCOL)
-        print(f"Saved {start_tuple} --> {end_tuple} under {centralizer_string} to {write_file.name}")
-
-
 if __name__ == "__main__":
     sp.init_printing()
 
@@ -176,6 +163,9 @@ if __name__ == "__main__":
     cases_group.add_argument("--pt-ar", type=str, nargs=2, help="Input the numerical representations of the point arrays")
     cases_group.add_argument("--case-file")
     args = parser.parse_args()
+
+    # initialize the saver/loader class
+    transition_saver_loader = TransitionSaverLoader(args.pickle_dir)
 
     # get centralizer
     centralizer_str = args.centralizer.upper()
@@ -196,7 +186,7 @@ if __name__ == "__main__":
             print()
 
         print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
-        save_transitions(args.pickle_dir, start_tuple, end_tuple, centralizer_str, transitions)
+        transition_saver_loader.save_transitions(start_tuple, end_tuple, centralizer_str, transitions)
         etime = time.time()
         print(f"Done in{etime - stime : .3f} seconds.")
     elif args.case_file is not None:
@@ -214,17 +204,16 @@ if __name__ == "__main__":
             stime = time.time()
             start_tuple, end_tuple = case
 
-            pickle_filename = get_pickle_filename(args.pickle_dir, start_tuple, end_tuple, centralizer_str)
-
             # if we are not redoing cases skip it if it's already done
-            if not args.redo and file_exists(pickle_filename):
+            if not args.redo and transition_saver_loader.pickle_file_exists(start_tuple, end_tuple, centralizer_str):
+                pickle_filename = transition_saver_loader.get_pickle_filename(start_tuple, end_tuple, centralizer_str)
                 print(f"Case {start_tuple} --> {end_tuple} is already done in {pickle_filename}\n")
                 continue
 
             print(f"Starting case {start_tuple} --> {end_tuple}...")
             transitions = find_transition(start_tuple, end_tuple, centralizer, centralizer_str)
             print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
-            save_transitions(args.pickle_dir, start_tuple, end_tuple, centralizer_str, transitions)
+            transition_saver_loader.save_transitions(start_tuple, end_tuple, centralizer_str, transitions)
             etime = time.time()
             print(f"Case {start_tuple} --> {end_tuple} done in{etime - stime : .3f} seconds.")
             print()
