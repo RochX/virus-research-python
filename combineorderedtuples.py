@@ -10,7 +10,7 @@ import time
 import sys
 from tqdm.auto import tqdm
 from virusdata import virusdata
-from matrixgroups import icosahedralgroup, a4group, d10group, d6group
+from matrixgroups import icosahedralgroup, centralizers
 
 
 # checks if a sympy equation is either true or solvable
@@ -19,7 +19,7 @@ def equation_is_true_or_solvable(eq):
 
 
 def get_vector_pair_filename(dir, start_num, end_num, centralizer):
-    centralizer_str = get_centralizer_str_from_matrix(centralizer)
+    centralizer_str = centralizers.get_centralizer_str_from_matrix(centralizer)
 
     if dir[-1] != "/":
         dir = dir + "/"
@@ -160,28 +160,6 @@ def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
         return results
 
 
-def get_centralizer_str_from_matrix(centralizer):
-    if centralizer == d6group.centralizer():
-        return "D6"
-    elif centralizer == d10group.centralizer():
-        return "D10"
-    elif centralizer == a4group.centralizer():
-        return "A4"
-    else:
-        raise ValueError("Centralizer is not A4, D10, or D6")
-
-
-def get_centralizer_from_str(centralizer_str):
-    if centralizer_str == "A4":
-        return a4group.centralizer()
-    elif centralizer_str == "D10":
-        return d10group.centralizer()
-    elif centralizer_str == "D6":
-        return d6group.centralizer()
-    else:
-        raise ValueError("Centralizer String is not A4, D10, or D6")
-
-
 def get_pickle_filename(pickle_dir, start_tuple, end_tuple, centralizer_string):
     # add / to directory string if it is not there
     if pickle_dir[-1] != "/":
@@ -211,7 +189,7 @@ if __name__ == "__main__":
 
     # get centralizer
     centralizer_str = args.centralizer.upper()
-    centralizer = get_centralizer_from_str(centralizer_str)
+    centralizer = centralizers.get_centralizer_from_str(centralizer_str)
 
 
     def create_tuple(arg_str):
