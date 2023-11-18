@@ -61,7 +61,7 @@ def two_base_point_array_is_redundant(p0, p1):
 
 def is_valid_point_array(point_array):
     try:
-        virusdata.getGenerators(point_array)
+        virusdata.get_generators(point_array)
         return True
     except ValueError:
         return False

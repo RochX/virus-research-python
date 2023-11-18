@@ -74,7 +74,7 @@ configs[54] = {BASE_STR: 2 * Dinv * Dinv * f, TRANSLATION_STR:  s}
 configs[55] = {BASE_STR: Dinv * f, TRANSLATION_STR:  s}
 
 
-def getGenerators(tuple):
+def get_generators(tuple):
     generators = []
     for index, curr in enumerate(tuple):
         # add translation if it doesn't exist

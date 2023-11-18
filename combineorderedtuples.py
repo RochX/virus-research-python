@@ -72,8 +72,8 @@ def find_multiple_orbit_pairs(start_tuple, end_tuple, centralizer):
         assert type(start_tuple) == type(end_tuple)
 
     # get generators from the table
-    start_generators = virusdata.getGenerators(start_tuple)
-    end_generators = virusdata.getGenerators(end_tuple)
+    start_generators = virusdata.get_generators(start_tuple)
+    end_generators = virusdata.get_generators(end_tuple)
 
     start_translation_str = virusdata.get_translation_vector_str(start_generators[0])
     end_translation_str = virusdata.get_translation_vector_str(end_generators[0])
