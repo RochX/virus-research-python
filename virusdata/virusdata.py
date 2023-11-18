@@ -88,3 +88,14 @@ def getGenerators(tuple):
         generators.append(configs[curr][BASE_STR])
 
     return generators
+
+
+def get_translation_vector_str(translation_vector):
+    if translation_vector == f:
+        return "f"
+    elif translation_vector == b:
+        return "b"
+    elif translation_vector == s:
+        return "s"
+    else:
+        raise ValueError("Vector is not a translation vector")

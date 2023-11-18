@@ -75,18 +75,8 @@ def find_multiple_orbit_pairs(start_tuple, end_tuple, centralizer):
     start_generators = virusdata.getGenerators(start_tuple)
     end_generators = virusdata.getGenerators(end_tuple)
 
-    def get_translation_vector_str(translation_vector):
-        if translation_vector == virusdata.f:
-            return "f"
-        elif translation_vector == virusdata.b:
-            return "b"
-        elif translation_vector == virusdata.s:
-            return "s"
-        else:
-            raise ValueError("Vector is not a translation vector")
-
-    start_translation_str = get_translation_vector_str(start_generators[0])
-    end_translation_str = get_translation_vector_str(end_generators[0])
+    start_translation_str = virusdata.get_translation_vector_str(start_generators[0])
+    end_translation_str = virusdata.get_translation_vector_str(end_generators[0])
 
     # create orbits
     start_orbits = icosahedralgroup.orbitsOfVectors(start_generators)
