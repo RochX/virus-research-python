@@ -13,6 +13,8 @@ def get_centralizer_str_from_matrix(centralizer):
 
 
 def get_centralizer_from_str(centralizer_str):
+    centralizer_str = centralizer_str.upper()
+
     if centralizer_str == "A4":
         return a4group.centralizer()
     elif centralizer_str == "D10":
