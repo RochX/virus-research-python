@@ -23,3 +23,10 @@ def get_centralizer_from_str(centralizer_str):
         return d6group.centralizer()
     else:
         raise ValueError("Centralizer String is not A4, D10, or D6")
+
+
+def is_centralizer(matrix):
+    if matrix in [a4group.centralizer(), d10group.centralizer(), d6group.centralizer()]:
+        return True
+
+    return False
