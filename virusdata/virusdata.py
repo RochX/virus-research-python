@@ -99,3 +99,16 @@ def get_translation_vector_str(translation_vector):
         return "s"
     else:
         raise ValueError("Vector is not a translation vector")
+
+
+def get_single_generator_from_str(string):
+    if string == "f":
+        return f
+    elif string == "b":
+        return b
+    elif string == "s":
+        return s
+    try:
+        return configs[int(string)][BASE_STR]
+    except KeyError:
+        raise ValueError(f"Input \"{string}\" is not f, b, s or a number 1 - 55.")
