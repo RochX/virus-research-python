@@ -1,6 +1,12 @@
+import itertools
 import os
 import pickle
 import re
+import sympy as sp
+from tqdm.auto import tqdm
+import sys
+from matrixgroups import icosahedralgroup, centralizers
+from virusdata import virusdata
 
 
 class PickleFileNameGetter:
@@ -30,3 +36,56 @@ class TransitionSaverLoader(PickleFileNameGetter):
         with open(self.get_pickle_filename(start_tuple, end_tuple, centralizer_string), 'wb') as write_file:
             pickle.dump(transitions, write_file, protocol=pickle.HIGHEST_PROTOCOL)
             print(f"Saved {start_tuple} --> {end_tuple} under {centralizer_string} to {write_file.name}.")
+
+
+class VectorPairSaverLoader(PickleFileNameGetter):
+    def __init__(self, pickle_dir, centralizer_str):
+        super().__init__(pickle_dir)
+
+        self.centralizer_str = centralizer_str
+        self.centralizer = centralizers.get_centralizer_from_str(self.centralizer_str)
+
+    # overrides function in PickleFileNameGetter
+    def get_pickle_filename(self, start_tuple, end_tuple, centralizer_string):
+        case_filename = re.sub('[()\[\] ]', '', f"{start_tuple}_to_{end_tuple}_{centralizer_string}_pairs.pickle")
+        return os.path.join(self.pickle_directory, case_filename)
+
+    def get_vector_pairs(self, start, end):
+        sys.stdout.flush()
+        function_call_desc = f"{start} --> {end}"
+
+        if self.pickle_file_exists(start, end, self.centralizer_str):
+            print(function_call_desc + " pairs returned from file.")
+            return self.get_pickle_data(start, end, self.centralizer_str)
+
+        vector_pairs = self.generate_vector_pairs(start, end)
+        self.save_vector_pairs(start, end, vector_pairs)
+
+        return vector_pairs
+
+    def generate_vector_pairs(self, start, end):
+        function_call_desc = f"{start} --> {end}"
+
+        start_vector = virusdata.get_single_generator_from_str(start)
+        end_vector = virusdata.get_single_generator_from_str(end)
+
+        start_orbit = icosahedralgroup.orbitOfVector(start_vector)
+        end_orbit = icosahedralgroup.orbitOfVector(end_vector)
+
+        pair_iterator = tqdm(itertools.product(start_orbit, end_orbit), desc=function_call_desc,
+                             total=len(start_orbit) * len(end_orbit))
+
+        vector_pairs = []
+        for v0, v1 in pair_iterator:
+            if equation_is_true_or_solvable(sp.Eq(self.centralizer * v0, v1)):
+                vector_pairs.append((v0, v1))
+
+        return vector_pairs
+
+    def save_vector_pairs(self, start, end, vector_pairs):
+        with open(self.get_pickle_filename(start, end, self.centralizer_str), 'wb') as write_file:
+            pickle.dump(vector_pairs, write_file)
+
+
+def equation_is_true_or_solvable(eq):
+    return eq == True or len(sp.solve(eq)) > 0
