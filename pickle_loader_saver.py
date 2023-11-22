@@ -12,12 +12,17 @@ class PickleFileNameGetter:
         self.pickle_directory = pickle_directory
 
     def get_pickle_filename(self, start_tuple, end_tuple, centralizer_string):
+        centralizer_string = centralizer_string.upper()
         case_filename = re.sub('[()\[\] ]', '', f"{start_tuple}_to_{end_tuple}_{centralizer_string}.pickle")
         return os.path.join(self.pickle_directory, case_filename)
 
     def pickle_file_exists(self, start_tuple, end_tuple, centralizer_str):
         pickle_filename = self.get_pickle_filename(start_tuple, end_tuple, centralizer_str)
         return os.path.exists(pickle_filename)
+
+    def get_pickle_data(self, start_tuple, end_tuple, centralizer_string):
+        with open(self.get_pickle_filename(start_tuple, end_tuple, centralizer_string), 'rb') as read_file:
+            return pickle.load(read_file)
 
 
 class TransitionSaverLoader(PickleFileNameGetter):
