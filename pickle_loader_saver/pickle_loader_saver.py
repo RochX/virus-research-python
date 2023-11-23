@@ -38,6 +38,7 @@ class TransitionSaverLoader(PickleFileNameGetter):
             print(f"Saved {start_tuple} --> {end_tuple} under {centralizer_string} to {write_file.name}.")
 
 
+# finds what pairs of vectors can be solved by Tv_0 = v_1 while looping over their (ICO) orbits
 class VectorPairSaverLoader(PickleFileNameGetter):
     def __init__(self, pickle_dir, centralizer_str):
         super().__init__(pickle_dir)
@@ -49,6 +50,16 @@ class VectorPairSaverLoader(PickleFileNameGetter):
     def get_pickle_filename(self, start_tuple, end_tuple, centralizer_string):
         case_filename = re.sub('[()\[\] ]', '', f"{start_tuple}_to_{end_tuple}_{centralizer_string}_pairs.pickle")
         return os.path.join(self.pickle_directory, case_filename)
+
+    def get_multiple_vector_pairs(self, start_tuple, end_tuple):
+        if not has_same_number_elements(start_tuple, end_tuple):
+            raise ValueError(f"\"{start_tuple}\" and \"{end_tuple}\" do not have the same number of elements.")
+
+        list_of_vector_pairs = []
+        for start, end in zip(start_tuple, end_tuple):
+            list_of_vector_pairs.append(self.get_vector_pairs(start, end))
+
+        return list_of_vector_pairs
 
     def get_vector_pairs(self, start, end):
         sys.stdout.flush()
