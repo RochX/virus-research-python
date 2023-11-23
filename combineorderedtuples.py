@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     centralizer_strings = ["a4", "d10", "d6"]
     parser = argparse.ArgumentParser(description="Finds icosahedral virus transitions between point arrays.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-d", "--pickle_dir", default="./", help="Directory in which the files will be saved. Defaults to current working directory.")
+    parser.add_argument("-d", "--pickle_dir", default="transitions", help="Directory in which the files will be saved. Creates a default \"transitions\" directory if none specified.")
     parser.add_argument("-c", "--centralizer", type=str.lower, choices=centralizer_strings, required=True, help="Select the centralizer to be used.")
     parser.add_argument("-r", "--redo", action="store_true", help="Does all cases given, even if they have already been done before.")
     cases_group = parser.add_mutually_exclusive_group(required=True)
