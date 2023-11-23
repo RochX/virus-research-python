@@ -2,7 +2,6 @@ import argparse
 import sympy as sp
 import itertools
 import multiprocessing
-import re
 import os
 from os.path import exists as file_exists
 import pickle
@@ -11,7 +10,7 @@ import sys
 from tqdm.auto import tqdm
 from virusdata import virusdata
 from matrixgroups import icosahedralgroup, centralizers
-from pickle_loader_saver import TransitionSaverLoader
+from pickle_loader_saver.pickle_loader_saver import TransitionSaverLoader
 
 
 # checks if a sympy equation is either true or solvable
@@ -28,7 +27,6 @@ def get_vector_pair_filename(dir, start_num, end_num, centralizer):
     return dir + f"{start_num}_to_{end_num}_{centralizer_str}_pairs.pickle"
 
 
-# finds what pairs of vectors can be solved by Tv_0 = v_1 while looping over their (ICO) orbits
 def find_orbit_pairs(start_num, orbit0, end_num, orbit1, centralizer, tqdm_desc=""):
     PAIR_DIRECTORY = "vector_pairs/"
     vector_pair_filename = get_vector_pair_filename(PAIR_DIRECTORY, start_num, end_num, centralizer)
