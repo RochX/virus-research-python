@@ -10,82 +10,12 @@ import sys
 from tqdm.auto import tqdm
 from virusdata import virusdata
 from matrixgroups import icosahedralgroup, centralizers
-from pickle_loader_saver.pickle_loader_saver import TransitionSaverLoader
+from pickle_loader_saver.pickle_loader_saver import TransitionSaverLoader, VectorPairSaverLoader
 
 
 # checks if a sympy equation is either true or solvable
 def equation_is_true_or_solvable(eq):
     return eq == True or len(sp.solve(eq)) > 0
-
-
-def get_vector_pair_filename(dir, start_num, end_num, centralizer):
-    centralizer_str = centralizers.get_centralizer_str_from_matrix(centralizer)
-
-    if dir[-1] != "/":
-        dir = dir + "/"
-
-    return dir + f"{start_num}_to_{end_num}_{centralizer_str}_pairs.pickle"
-
-
-def find_orbit_pairs(start_num, orbit0, end_num, orbit1, centralizer, tqdm_desc=""):
-    PAIR_DIRECTORY = "vector_pairs/"
-    vector_pair_filename = get_vector_pair_filename(PAIR_DIRECTORY, start_num, end_num, centralizer)
-
-    # force stdout to flush first, so an empty tqdm bar doesn't appear before the stdout print
-    sys.stdout.flush()
-
-    # if a vector pair file exists, return it
-    if start_num != -1 and file_exists(vector_pair_filename):
-        with open(vector_pair_filename, 'rb') as pickle_file:
-            print(tqdm_desc + " returned from file.", flush=True)
-            return pickle.load(pickle_file)
-
-    vector_pairs = []
-    if tqdm_desc != "":
-        pair_iter = tqdm(itertools.product(orbit0, orbit1), desc=tqdm_desc, total=len(orbit0) * len(orbit1))
-    else:
-        pair_iter = itertools.product(orbit0, orbit1)
-    for v0, v1 in pair_iter:
-        if equation_is_true_or_solvable(sp.Eq(centralizer * v0, v1)):
-            vector_pairs.append((v0, v1))
-
-    # write vector pairs to file
-    if start_num != -1:
-        # create the directory if it doesn't exist
-        if not os.path.exists(PAIR_DIRECTORY):
-            os.makedirs(PAIR_DIRECTORY)
-
-        with open(vector_pair_filename, 'wb') as pickle_file:
-            pickle.dump(vector_pairs, pickle_file, protocol=pickle.HIGHEST_PROTOCOL)
-
-    return vector_pairs
-
-
-# runs findOrbitPairs on multiple generators at once
-def find_multiple_orbit_pairs(start_tuple, end_tuple, centralizer):
-    # check whether start_tuple and end_tuple are same length
-    # comparing two ints should count has same length even though len(<int>) does not work
-    try:
-        assert len(start_tuple) == len(end_tuple)
-    except TypeError:
-        assert type(start_tuple) == type(end_tuple)
-
-    # get generators from the table
-    start_generators = virusdata.get_generators(start_tuple)
-    end_generators = virusdata.get_generators(end_tuple)
-
-    start_translation_str = virusdata.get_translation_vector_str(start_generators[0])
-    end_translation_str = virusdata.get_translation_vector_str(end_generators[0])
-
-    # create orbits
-    start_orbits = icosahedralgroup.orbitsOfVectors(start_generators)
-    end_orbits = icosahedralgroup.orbitsOfVectors(end_generators)
-
-    orbits_pairs = [find_orbit_pairs(start_translation_str, start_orbits[0], end_translation_str, end_orbits[0], centralizer, tqdm_desc=f"translation {start_translation_str} --> {end_translation_str}")]
-    for start_num, start_orbit, end_num, end_orbit in zip(start_tuple, start_orbits[1:], end_tuple, end_orbits[1:]):
-        orbits_pairs.append(find_orbit_pairs(start_num, start_orbit, end_num, end_orbit, centralizer, tqdm_desc=f"{start_num} --> {end_num}"))
-
-    return orbits_pairs
 
 
 # recursive helper function for finding transitions
@@ -124,7 +54,9 @@ def find_transition_helper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_d
 
 # find a transition from (n_1, n_2, ..., n_k) to (m_1, m_2, ..., m_k)
 def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
-    orbits_pairs = find_multiple_orbit_pairs(start_tuple, end_tuple, centralizer)
+    PAIR_DIR = "vector_pairs"
+    vector_pair_loader = VectorPairSaverLoader(PAIR_DIR, centralizer_str)
+    orbits_pairs = vector_pair_loader.get_multiple_vector_pairs(start_tuple, end_tuple)
 
     results = []
     pbar = tqdm(total=len(orbits_pairs[0]), desc=f"Finding transitions for {start_tuple} --> {end_tuple} under {centralizer_str}")
