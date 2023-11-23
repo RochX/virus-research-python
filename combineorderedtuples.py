@@ -123,7 +123,6 @@ if __name__ == "__main__":
                 start_tuple, end_tuple = list(map(create_tuple, line.strip().split(' > ')))
                 cases.append((start_tuple, end_tuple))
 
-        print(cases)
         for case in cases:
             stime = time.time()
             start_tuple, end_tuple = case
