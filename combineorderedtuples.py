@@ -50,7 +50,7 @@ def find_transition_helper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_d
 def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
     PAIR_DIR = "vector_pairs"
     vector_pair_loader = VectorPairSaverLoader(PAIR_DIR, centralizer_str)
-    orbits_pairs = vector_pair_loader.get_multiple_vector_pairs(start_tuple, end_tuple)
+    orbits_pairs = vector_pair_loader.get_multiple_vector_pairs(start_tuple, end_tuple, add_in_translation=True)
 
     results = []
     pbar = tqdm(total=len(orbits_pairs[0]), desc=f"Finding transitions for {start_tuple} --> {end_tuple} under {centralizer_str}")

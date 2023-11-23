@@ -51,9 +51,19 @@ class VectorPairSaverLoader(PickleFileNameGetter):
         case_filename = re.sub('[()\[\] ]', '', f"{start_tuple}_to_{end_tuple}_{centralizer_string}_pairs.pickle")
         return os.path.join(self.pickle_directory, case_filename)
 
-    def get_multiple_vector_pairs(self, start_tuple, end_tuple):
+    def get_multiple_vector_pairs(self, start_tuple, end_tuple, add_in_translation):
         if not has_same_number_elements(start_tuple, end_tuple):
             raise ValueError(f"\"{start_tuple}\" and \"{end_tuple}\" do not have the same number of elements.")
+
+        if add_in_translation:
+            start_translation = virusdata.configs[start_tuple[0]][virusdata.TRANSLATION_STR]
+            end_translation = virusdata.configs[end_tuple[0]][virusdata.TRANSLATION_STR]
+
+            start_translation_str = virusdata.get_translation_vector_str(start_translation)
+            end_translation_str = virusdata.get_translation_vector_str(end_translation)
+
+            start_tuple = [start_translation_str] + start_tuple
+            end_tuple = [end_translation_str] + end_tuple
 
         list_of_vector_pairs = []
         for start, end in zip(start_tuple, end_tuple):
