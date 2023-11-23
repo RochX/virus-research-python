@@ -1,15 +1,9 @@
 import argparse
 import sympy as sp
-import itertools
 import multiprocessing
-import os
-from os.path import exists as file_exists
-import pickle
 import time
-import sys
 from tqdm.auto import tqdm
-from virusdata import virusdata
-from matrixgroups import icosahedralgroup, centralizers
+from matrixgroups import centralizers
 from pickle_loader_saver.pickle_loader_saver import TransitionSaverLoader, VectorPairSaverLoader
 
 
