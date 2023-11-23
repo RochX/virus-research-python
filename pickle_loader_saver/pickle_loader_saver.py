@@ -37,6 +37,27 @@ class TransitionSaverLoader(PickleFileNameGetter):
             pickle.dump(transitions, write_file, protocol=pickle.HIGHEST_PROTOCOL)
             print(f"Saved {start_tuple} --> {end_tuple} under {centralizer_string} to {write_file.name}.")
 
+    # uses one base data to determine whether a given test case is possible
+    def check_case_is_possible(self, start_tuple, end_tuple, centralizer_string):
+        if not has_same_number_elements(start_tuple, end_tuple):
+            return False
+
+        if type(start_tuple) in [int, str] or len(start_tuple) == 1:
+            return True
+
+        print("Check if impossible by one base...")
+        for start, end in zip(start_tuple, end_tuple):
+            try:
+                one_base_transitions = self.get_pickle_data(start, end, centralizer_string)
+                if len(one_base_transitions) == 0:
+                    print(f"{[start]} --> {[end]} under {centralizer_string} is impossible.")
+                    return False
+            except FileNotFoundError:
+                print(f"WARN: File {self.get_pickle_filename(start, end, centralizer_string)} does not exist.")
+
+        print("Possible.")
+        return True
+
 
 # finds what pairs of vectors can be solved by Tv_0 = v_1 while looping over their (ICO) orbits
 class VectorPairSaverLoader(PickleFileNameGetter):

@@ -1,4 +1,5 @@
 import argparse
+import sys
 import sympy as sp
 import multiprocessing
 import time
@@ -48,6 +49,8 @@ def find_transition_helper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_d
 
 # find a transition from (n_1, n_2, ..., n_k) to (m_1, m_2, ..., m_k)
 def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
+    sys.stdout.flush()
+
     PAIR_DIR = "vector_pairs"
     vector_pair_loader = VectorPairSaverLoader(PAIR_DIR, centralizer_str)
     orbits_pairs = vector_pair_loader.get_multiple_vector_pairs(start_tuple, end_tuple, add_in_translation=True)
@@ -134,7 +137,11 @@ if __name__ == "__main__":
                 continue
 
             print(f"Starting case {start_tuple} --> {end_tuple}...")
-            transitions = find_transition(start_tuple, end_tuple, centralizer, centralizer_str)
+            if transition_saver_loader.check_case_is_possible(start_tuple, end_tuple, centralizer_str):
+                transitions = find_transition(start_tuple, end_tuple, centralizer, centralizer_str)
+            else:
+                print(f"{start_tuple} --> {end_tuple} impossible by one base.")
+                transitions = []
             print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
             transition_saver_loader.save_transitions(start_tuple, end_tuple, centralizer_str, transitions)
             etime = time.time()
