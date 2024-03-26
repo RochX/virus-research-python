@@ -9,7 +9,7 @@ from matrixgroups import icosahedralgroup, centralizers
 from virusdata import virusdata
 
 
-class PickleFileNameGetter:
+class PickleManager:
     def __init__(self, pickle_directory):
         is_a_directory = os.path.isdir(pickle_directory)
         if not is_a_directory:
@@ -17,23 +17,23 @@ class PickleFileNameGetter:
 
         self.pickle_directory = pickle_directory
 
-    def get_pickle_filename(self, start_tuple, end_tuple, centralizer_string):
+    def get_transition_pickle_filename(self, start_tuple, end_tuple, centralizer_string):
         centralizer_string = centralizer_string.upper()
         case_filename = re.sub('[()\[\] ]', '', f"{start_tuple}_to_{end_tuple}_{centralizer_string}.pickle")
         return os.path.join(self.pickle_directory, case_filename)
 
-    def pickle_file_exists(self, start_tuple, end_tuple, centralizer_str):
-        pickle_filename = self.get_pickle_filename(start_tuple, end_tuple, centralizer_str)
+    def transition_pickle_file_exists(self, start_tuple, end_tuple, centralizer_str):
+        pickle_filename = self.get_transition_pickle_filename(start_tuple, end_tuple, centralizer_str)
         return os.path.exists(pickle_filename)
 
     def get_pickle_data(self, start_tuple, end_tuple, centralizer_string):
-        with open(self.get_pickle_filename(start_tuple, end_tuple, centralizer_string), 'rb') as read_file:
+        with open(self.get_transition_pickle_filename(start_tuple, end_tuple, centralizer_string), 'rb') as read_file:
             return pickle.load(read_file)
 
 
-class TransitionSaverLoader(PickleFileNameGetter):
+class TransitionPickleManager(PickleManager):
     def save_transitions(self, start_tuple, end_tuple, centralizer_string, transitions):
-        with open(self.get_pickle_filename(start_tuple, end_tuple, centralizer_string), 'wb') as write_file:
+        with open(self.get_transition_pickle_filename(start_tuple, end_tuple, centralizer_string), 'wb') as write_file:
             pickle.dump(transitions, write_file, protocol=pickle.HIGHEST_PROTOCOL)
             print(f"Saved {start_tuple} --> {end_tuple} under {centralizer_string} to {write_file.name}.")
 
@@ -53,22 +53,22 @@ class TransitionSaverLoader(PickleFileNameGetter):
                     print(f"{[start]} --> {[end]} under {centralizer_string} is impossible.")
                     return False
             except FileNotFoundError:
-                print(f"WARN: File {self.get_pickle_filename(start, end, centralizer_string)} does not exist.")
+                print(f"WARN: File {self.get_transition_pickle_filename(start, end, centralizer_string)} does not exist.")
 
         print("Possible.")
         return True
 
 
 # finds what pairs of vectors can be solved by Tv_0 = v_1 while looping over their (ICO) orbits
-class VectorPairSaverLoader(PickleFileNameGetter):
+class VectorPairPickleManager(PickleManager):
     def __init__(self, pickle_dir, centralizer_str):
         super().__init__(pickle_dir)
 
         self.centralizer_str = centralizer_str
         self.centralizer = centralizers.get_centralizer_from_str(self.centralizer_str)
 
-    # overrides function in PickleFileNameGetter
-    def get_pickle_filename(self, start_tuple, end_tuple, centralizer_string):
+    # overrides function in PickleManager
+    def get_transition_pickle_filename(self, start_tuple, end_tuple, centralizer_string):
         case_filename = re.sub('[()\[\] ]', '', f"{start_tuple}_to_{end_tuple}_{centralizer_string}_pairs.pickle")
         return os.path.join(self.pickle_directory, case_filename)
 
@@ -96,7 +96,7 @@ class VectorPairSaverLoader(PickleFileNameGetter):
         sys.stdout.flush()
         function_call_desc = f"{start} --> {end}"
 
-        if self.pickle_file_exists(start, end, self.centralizer_str):
+        if self.transition_pickle_file_exists(start, end, self.centralizer_str):
             print(function_call_desc + " pairs returned from file.")
             return self.get_pickle_data(start, end, self.centralizer_str)
 
@@ -125,7 +125,7 @@ class VectorPairSaverLoader(PickleFileNameGetter):
         return vector_pairs
 
     def save_vector_pairs(self, start, end, vector_pairs):
-        with open(self.get_pickle_filename(start, end, self.centralizer_str), 'wb') as write_file:
+        with open(self.get_transition_pickle_filename(start, end, self.centralizer_str), 'wb') as write_file:
             pickle.dump(vector_pairs, write_file)
 
 

@@ -5,7 +5,7 @@ import multiprocessing
 import time
 from tqdm.auto import tqdm
 from matrixgroups import centralizers
-from pickle_loader_saver.pickle_loader_saver import TransitionSaverLoader, VectorPairSaverLoader
+from pickle_manager.pickle_manager import TransitionPickleManager, VectorPairPickleManager
 
 
 # checks if a sympy equation is either true or solvable
@@ -16,19 +16,19 @@ def equation_is_true_or_solvable(eq):
 # recursive helper function for finding transitions
 # builds up the columns of B0 and B1 in a depth first manner
 def find_transition_helper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_desc=""):
-    curr_cols = prevB0.shape[1]
+    num_curr_b0_cols = prevB0.shape[1]
     assert (prevB0.shape[1] == prevB1.shape[1])
 
-    if curr_cols == len(orbits_pairs):
+    if num_curr_b0_cols == len(orbits_pairs):
         return prevCentralizer, prevB0, prevB1
 
-    for pair in orbits_pairs[curr_cols]:
+    for pair in orbits_pairs[num_curr_b0_cols]:
         v0, v1 = pair
-        B0 = prevB0.col_insert(curr_cols, v0)
-        B1 = prevB1.col_insert(curr_cols, v1)
+        B0 = prevB0.col_insert(num_curr_b0_cols, v0)
+        B1 = prevB1.col_insert(num_curr_b0_cols, v1)
 
         # check for linear independence within the columns of B0 and B1
-        if B0.rank() != curr_cols+1 or B1.rank() != curr_cols+1:
+        if B0.rank() != num_curr_b0_cols+1 or B1.rank() != num_curr_b0_cols+1:
             continue
 
         curr_eq = sp.Eq(prevCentralizer * B0, B1)
@@ -52,11 +52,12 @@ def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
     sys.stdout.flush()
 
     PAIR_DIR = "vector_pairs"
-    vector_pair_loader = VectorPairSaverLoader(PAIR_DIR, centralizer_str)
-    orbits_pairs = vector_pair_loader.get_multiple_vector_pairs(start_tuple, end_tuple, add_in_translation=True)
+    vector_pair_pickle_manager = VectorPairPickleManager(PAIR_DIR, centralizer_str)
+    orbits_pairs = vector_pair_pickle_manager.get_multiple_vector_pairs(start_tuple, end_tuple, add_in_translation=True)
 
     results = []
-    pbar = tqdm(total=len(orbits_pairs[0]), desc=f"Finding transitions for {start_tuple} --> {end_tuple} under {centralizer_str}")
+    pbar = tqdm(total=len(orbits_pairs[0]),
+                desc=f"Finding transitions for {start_tuple} --> {end_tuple} under {centralizer_str}")
 
     # this function is called when a parallel process is finished
     def collect_result(result):
@@ -91,29 +92,29 @@ if __name__ == "__main__":
     cases_group.add_argument("--case-file")
     args = parser.parse_args()
 
-    # initialize the saver/loader class
-    transition_saver_loader = TransitionSaverLoader(args.pickle_dir)
+    # initialize the pickle manager class
+    transition_pickle_manager = TransitionPickleManager(args.pickle_dir)
 
     # get centralizer
     centralizer_str = args.centralizer.upper()
     centralizer = centralizers.get_centralizer_from_str(centralizer_str)
 
 
-    def create_tuple(arg_str):
+    def create_generating_list(arg_str):
         tup = map(int, arg_str.split(','))
         return list(tup)
 
     if args.pt_ar is not None:
         stime = time.time()
-        start_tuple, end_tuple = list(map(create_tuple, args.pt_ar))
+        start_generating_list, end_generating_list = list(map(create_generating_list, args.pt_ar))
 
-        transitions = find_transition(start_tuple, end_tuple, centralizer, centralizer_str)
+        transitions = find_transition(start_generating_list, end_generating_list, centralizer, centralizer_str)
         for res in transitions:
             sp.pprint(res)
             print()
 
-        print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
-        transition_saver_loader.save_transitions(start_tuple, end_tuple, centralizer_str, transitions)
+        print(f"Number of transitions for {start_generating_list} --> {end_generating_list} under {centralizer_str} is {len(transitions)}")
+        transition_pickle_manager.save_transitions(start_generating_list, end_generating_list, centralizer_str, transitions)
         etime = time.time()
         print(f"Done in{etime - stime : .3f} seconds.")
     elif args.case_file is not None:
@@ -123,29 +124,29 @@ if __name__ == "__main__":
             for line in read_file.readlines():
                 # this is assuming each line in file looks like:
                 # n_1, n_2, ..., n_k > m_1, m_2, ..., m_l
-                start_tuple, end_tuple = list(map(create_tuple, line.strip().split(' > ')))
-                cases.append((start_tuple, end_tuple))
+                start_generating_list, end_generating_list = list(map(create_generating_list, line.strip().split(' > ')))
+                cases.append((start_generating_list, end_generating_list))
 
         for case in cases:
             stime = time.time()
-            start_tuple, end_tuple = case
+            start_generating_list, end_generating_list = case
 
             # if we are not redoing cases skip it if it's already done
-            if not args.redo and transition_saver_loader.pickle_file_exists(start_tuple, end_tuple, centralizer_str):
-                pickle_filename = transition_saver_loader.get_pickle_filename(start_tuple, end_tuple, centralizer_str)
-                print(f"Case {start_tuple} --> {end_tuple} is already done in {pickle_filename}\n")
+            if not args.redo and transition_pickle_manager.transition_pickle_file_exists(start_generating_list, end_generating_list, centralizer_str):
+                transition_pickle_filename = transition_pickle_manager.get_transition_pickle_filename(start_generating_list, end_generating_list, centralizer_str)
+                print(f"Case {start_generating_list} --> {end_generating_list} is already done in {transition_pickle_filename}\n")
                 continue
 
-            print(f"Starting case {start_tuple} --> {end_tuple}...")
-            if transition_saver_loader.check_case_is_possible(start_tuple, end_tuple, centralizer_str):
-                transitions = find_transition(start_tuple, end_tuple, centralizer, centralizer_str)
+            print(f"Starting case {start_generating_list} --> {end_generating_list}...")
+            if transition_pickle_manager.check_case_is_possible(start_generating_list, end_generating_list, centralizer_str):
+                transitions = find_transition(start_generating_list, end_generating_list, centralizer, centralizer_str)
             else:
-                print(f"{start_tuple} --> {end_tuple} impossible by one base.")
+                print(f"{start_generating_list} --> {end_generating_list} impossible by one base.")
                 transitions = []
-            print(f"Number of transitions for {start_tuple} --> {end_tuple} under {centralizer_str} is {len(transitions)}")
-            transition_saver_loader.save_transitions(start_tuple, end_tuple, centralizer_str, transitions)
+            print(f"Number of transitions for {start_generating_list} --> {end_generating_list} under {centralizer_str} is {len(transitions)}")
+            transition_pickle_manager.save_transitions(start_generating_list, end_generating_list, centralizer_str, transitions)
             etime = time.time()
-            print(f"Case {start_tuple} --> {end_tuple} done in{etime - stime : .3f} seconds.")
+            print(f"Case {start_generating_list} --> {end_generating_list} done in{etime - stime : .3f} seconds.")
             print()
 
         total_etime = time.time()

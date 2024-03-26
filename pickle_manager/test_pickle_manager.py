@@ -1,6 +1,6 @@
 from unittest import TestCase
-import pickle_loader_saver
-from pickle_loader_saver import has_same_number_elements
+import pickle_manager
+from pickle_manager import has_same_number_elements
 
 
 class Test(TestCase):
