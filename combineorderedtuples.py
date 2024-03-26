@@ -79,6 +79,67 @@ def find_transition(start_tuple, end_tuple, centralizer, centralizer_str):
         return results
 
 
+def create_generating_list(arg_str):
+    tup = map(int, arg_str.split(','))
+    return list(tup)
+
+
+def find_transitions_from_cmd_line(args, transition_pickle_manager):
+    stime = time.time()
+    start_generating_list, end_generating_list = list(map(create_generating_list, args.pt_ar))
+    transitions = find_transition(start_generating_list, end_generating_list, centralizer, centralizer_str)
+    for res in transitions:
+        sp.pprint(res)
+        print()
+    print(
+        f"Number of transitions for {start_generating_list} --> {end_generating_list} under {centralizer_str} is {len(transitions)}")
+    transition_pickle_manager.save_transitions(start_generating_list, end_generating_list, centralizer_str, transitions)
+    etime = time.time()
+    print(f"Done in{etime - stime : .3f} seconds.")
+
+
+def find_transitions_from_case_file(args, transition_pickle_manager):
+    total_stime = time.time()
+    cases = []
+    with open(args.case_file, 'r') as read_file:
+        for line in read_file.readlines():
+            # this is assuming each line in file looks like:
+            # n_1, n_2, ..., n_k > m_1, m_2, ..., m_l
+            start_generating_list, end_generating_list = list(map(create_generating_list, line.strip().split(' > ')))
+            cases.append((start_generating_list, end_generating_list))
+    for case in cases:
+        stime = time.time()
+        start_generating_list, end_generating_list = case
+
+        # if we are not redoing cases skip it if it's already done
+        if not args.redo and transition_pickle_manager.transition_pickle_file_exists(start_generating_list,
+                                                                                     end_generating_list,
+                                                                                     centralizer_str):
+            transition_pickle_filename = transition_pickle_manager.get_transition_pickle_filename(start_generating_list,
+                                                                                                  end_generating_list,
+                                                                                                  centralizer_str)
+            print(
+                f"Case {start_generating_list} --> {end_generating_list} is already done in {transition_pickle_filename}\n")
+            continue
+
+        print(f"Starting case {start_generating_list} --> {end_generating_list}...")
+        if transition_pickle_manager.check_case_is_possible(start_generating_list, end_generating_list,
+                                                            centralizer_str):
+            transitions = find_transition(start_generating_list, end_generating_list, centralizer, centralizer_str)
+        else:
+            print(f"{start_generating_list} --> {end_generating_list} impossible by one base.")
+            transitions = []
+        print(
+            f"Number of transitions for {start_generating_list} --> {end_generating_list} under {centralizer_str} is {len(transitions)}")
+        transition_pickle_manager.save_transitions(start_generating_list, end_generating_list, centralizer_str,
+                                                   transitions)
+        etime = time.time()
+        print(f"Case {start_generating_list} --> {end_generating_list} done in{etime - stime : .3f} seconds.")
+        print()
+    total_etime = time.time()
+    print(f"All cases completed in{total_etime - total_stime : .3f} seconds.")
+
+
 if __name__ == "__main__":
     sp.init_printing()
 
@@ -99,55 +160,7 @@ if __name__ == "__main__":
     centralizer_str = args.centralizer.upper()
     centralizer = centralizers.get_centralizer_from_str(centralizer_str)
 
-
-    def create_generating_list(arg_str):
-        tup = map(int, arg_str.split(','))
-        return list(tup)
-
     if args.pt_ar is not None:
-        stime = time.time()
-        start_generating_list, end_generating_list = list(map(create_generating_list, args.pt_ar))
-
-        transitions = find_transition(start_generating_list, end_generating_list, centralizer, centralizer_str)
-        for res in transitions:
-            sp.pprint(res)
-            print()
-
-        print(f"Number of transitions for {start_generating_list} --> {end_generating_list} under {centralizer_str} is {len(transitions)}")
-        transition_pickle_manager.save_transitions(start_generating_list, end_generating_list, centralizer_str, transitions)
-        etime = time.time()
-        print(f"Done in{etime - stime : .3f} seconds.")
+        find_transitions_from_cmd_line(args, transition_pickle_manager)
     elif args.case_file is not None:
-        total_stime = time.time()
-        cases = []
-        with open(args.case_file, 'r') as read_file:
-            for line in read_file.readlines():
-                # this is assuming each line in file looks like:
-                # n_1, n_2, ..., n_k > m_1, m_2, ..., m_l
-                start_generating_list, end_generating_list = list(map(create_generating_list, line.strip().split(' > ')))
-                cases.append((start_generating_list, end_generating_list))
-
-        for case in cases:
-            stime = time.time()
-            start_generating_list, end_generating_list = case
-
-            # if we are not redoing cases skip it if it's already done
-            if not args.redo and transition_pickle_manager.transition_pickle_file_exists(start_generating_list, end_generating_list, centralizer_str):
-                transition_pickle_filename = transition_pickle_manager.get_transition_pickle_filename(start_generating_list, end_generating_list, centralizer_str)
-                print(f"Case {start_generating_list} --> {end_generating_list} is already done in {transition_pickle_filename}\n")
-                continue
-
-            print(f"Starting case {start_generating_list} --> {end_generating_list}...")
-            if transition_pickle_manager.check_case_is_possible(start_generating_list, end_generating_list, centralizer_str):
-                transitions = find_transition(start_generating_list, end_generating_list, centralizer, centralizer_str)
-            else:
-                print(f"{start_generating_list} --> {end_generating_list} impossible by one base.")
-                transitions = []
-            print(f"Number of transitions for {start_generating_list} --> {end_generating_list} under {centralizer_str} is {len(transitions)}")
-            transition_pickle_manager.save_transitions(start_generating_list, end_generating_list, centralizer_str, transitions)
-            etime = time.time()
-            print(f"Case {start_generating_list} --> {end_generating_list} done in{etime - stime : .3f} seconds.")
-            print()
-
-        total_etime = time.time()
-        print(f"All cases completed in{total_etime - total_stime : .3f} seconds.")
+        find_transitions_from_case_file(args, transition_pickle_manager)
