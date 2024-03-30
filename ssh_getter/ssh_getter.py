@@ -2,6 +2,8 @@ import fabric
 import patchwork.files
 import sys
 import os
+
+from pickle_manager.pickle_manager import TransitionPickleManager
 # NOTE: requires ~/.ssh/config to be set up...
 # Host jigwe.kzoo.edu
 #     AddKeysToAgent yes
@@ -57,5 +59,8 @@ if __name__ == "__main__":
         sys.exit(0)
 
     with fabric.Connection(host=jigwe_hostname) as jigwe:
-        # this raises FileNotFoundError
-        download_from_remote(jigwe, "/scratch/xavier/virus_research/python/two_base_b0_b1_pickles/doesntexist")
+        download_from_remote(jigwe, "/scratch/xavier/virus_research/python/two_base_b0_b1_pickles/10_to_27_A4.pickle")
+
+    transition_pickle_manager = TransitionPickleManager(pickle_directory="downloads")
+
+    print(transition_pickle_manager.load_transitions(10, 27, "A4"))

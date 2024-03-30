@@ -39,6 +39,20 @@ class TransitionPickleManager(PickleManager):
             pickle.dump(transitions, write_file, protocol=pickle.HIGHEST_PROTOCOL)
             print(f"Saved {start_tuple} --> {end_tuple} under {centralizer_string} to {write_file.name}.")
 
+    def load_transitions(self, start_gen_list, end_gen_list, centralizer_string):
+        """
+        Loads transitions from file, checking if file exists first.
+        Checks in the directory given in the class constructor.
+        """
+        filename = self.get_transition_pickle_filename(start_gen_list, end_gen_list, centralizer_string)
+        filepath = os.path.join(os.getcwd(), filename)
+
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f"File {filepath} not found.")
+
+        with open(filepath, 'rb') as read_file:
+            return pickle.load(read_file)
+
     # uses one base data to determine whether a given test case is possible
     def check_case_is_possible(self, start_tuple, end_tuple, centralizer_string):
         if not genlist_utils.has_same_number_elements(start_tuple, end_tuple):
