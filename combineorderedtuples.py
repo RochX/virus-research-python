@@ -6,11 +6,7 @@ import time
 from tqdm.auto import tqdm
 from matrixgroups import centralizers
 from pickle_manager.pickle_manager import TransitionPickleManager, VectorPairPickleManager
-
-
-# checks if a sympy equation is either true or solvable
-def equation_is_true_or_solvable(eq):
-    return eq == True or len(sp.solve(eq)) > 0
+import utils.sympy_utils as sp_utils
 
 
 # recursive helper function for finding transitions
@@ -32,7 +28,7 @@ def find_transition_helper(prevCentralizer, prevB0, prevB1, orbits_pairs, tqdm_d
             continue
 
         curr_eq = sp.Eq(prevCentralizer * B0, B1)
-        if equation_is_true_or_solvable(curr_eq):
+        if sp_utils.equation_is_true_or_solvable(curr_eq):
             curr_solution = sp.solve(curr_eq)
             if len(curr_solution) == 0:
                 curr_centralizer = prevCentralizer

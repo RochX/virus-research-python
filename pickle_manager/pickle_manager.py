@@ -6,6 +6,8 @@ import sympy as sp
 from tqdm.auto import tqdm
 import sys
 from matrixgroups import icosahedralgroup, centralizers
+import utils.generatinglist_utils as genlist_utils
+import utils.sympy_utils as sp_utils
 from virusdata import virusdata
 
 
@@ -39,7 +41,7 @@ class TransitionPickleManager(PickleManager):
 
     # uses one base data to determine whether a given test case is possible
     def check_case_is_possible(self, start_tuple, end_tuple, centralizer_string):
-        if not has_same_number_elements(start_tuple, end_tuple):
+        if not genlist_utils.has_same_number_elements(start_tuple, end_tuple):
             return False
 
         if type(start_tuple) in [int, str] or len(start_tuple) == 1:
@@ -73,7 +75,7 @@ class VectorPairPickleManager(PickleManager):
         return os.path.join(self.pickle_directory, case_filename)
 
     def get_multiple_vector_pairs(self, start_tuple, end_tuple, add_in_translation):
-        if not has_same_number_elements(start_tuple, end_tuple):
+        if not genlist_utils.has_same_number_elements(start_tuple, end_tuple):
             raise ValueError(f"\"{start_tuple}\" and \"{end_tuple}\" do not have the same number of elements.")
 
         if add_in_translation:
@@ -119,7 +121,7 @@ class VectorPairPickleManager(PickleManager):
 
         vector_pairs = []
         for v0, v1 in pair_iterator:
-            if equation_is_true_or_solvable(sp.Eq(self.centralizer * v0, v1)):
+            if sp_utils.equation_is_true_or_solvable(sp.Eq(self.centralizer * v0, v1)):
                 vector_pairs.append((v0, v1))
 
         return vector_pairs
@@ -127,18 +129,3 @@ class VectorPairPickleManager(PickleManager):
     def save_vector_pairs(self, start, end, vector_pairs):
         with open(self.get_transition_pickle_filename(start, end, self.centralizer_str), 'wb') as write_file:
             pickle.dump(vector_pairs, write_file)
-
-
-def equation_is_true_or_solvable(eq):
-    return eq == True or len(sp.solve(eq)) > 0
-
-
-def has_same_number_elements(start_tuple, end_tuple):
-    try:
-        return len(start_tuple) == len(end_tuple)
-    except TypeError:
-        if type(start_tuple) != type(end_tuple):
-            return False
-
-        assert type(start_tuple) in [int, str]
-        return True
