@@ -1,4 +1,5 @@
 import fabric
+import patchwork.files
 import sys
 import os
 # NOTE: requires ~/.ssh/config to be set up...
@@ -25,6 +26,22 @@ def verify_ssh_config_is_setup(hostname, ssh_dir="~/.ssh/", ssh_config_filename=
         return hostname in ssh_config_contents
 
 
+def download_from_remote(connection: fabric.Connection, filepath: str):
+    """
+    Downloads a file from remote.
+    Raises a FileNotFoundError if the file doesn't exist on remote.
+    :param connection: Fabric connection object.
+    :param filepath: Path of file to download from remote.
+    :return: True if file successfully downloads.
+    """
+    if not patchwork.files.exists(connection, filepath):
+        raise FileNotFoundError(f"File '{filepath}' doesn't exist on remote '{connection.host}'.")
+
+    os.makedirs("downloads", exist_ok=True)
+    connection.get(filepath, local="downloads/")
+    return True
+
+
 if __name__ == "__main__":
     jigwe_hostname = "jigwe.kzoo.edu"
 
@@ -40,7 +57,5 @@ if __name__ == "__main__":
         sys.exit(0)
 
     with fabric.Connection(host=jigwe_hostname) as jigwe:
-        res = jigwe.run('cat cmds.txt')
-        print("\n\n\n")
-        print(res)
-
+        # this raises FileNotFoundError
+        download_from_remote(jigwe, "/scratch/xavier/virus_research/python/two_base_b0_b1_pickles/doesntexist")
