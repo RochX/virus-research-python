@@ -1,6 +1,6 @@
 from virusdata import virusdata
 import itertools
-from permutetestcases import tuple_to_case
+from pt_arr_cases.permutetestcases import tuple_to_case
 
 
 def main():
