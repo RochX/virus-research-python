@@ -1,8 +1,9 @@
-from unittest import TestCase
-import virusdata
+import unittest
+
+from virusdata import virusdata
 
 
-class Test(TestCase):
+class Test(unittest.TestCase):
     def test_get_generators(self):
         self.assertEqual(len(virusdata.get_generators((1, 2))), 3)
         self.assertRaises(ValueError, virusdata.get_generators, (1, 8))
@@ -23,3 +24,7 @@ class Test(TestCase):
             self.assertEqual(virusdata.get_single_generator_from_str(str(i)), base_vec)
 
         self.assertRaises(ValueError, virusdata.get_single_generator_from_str, "garbage_input")
+
+
+if __name__ == '__main__':
+    unittest.main()
