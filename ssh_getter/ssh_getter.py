@@ -4,13 +4,14 @@ import sys
 import os
 
 from pickle_manager.pickle_manager import TransitionPickleManager
+DOWNLOAD_DIR = "downloads/"
+
+
 # NOTE: requires ~/.ssh/config to be set up...
 # Host jigwe.kzoo.edu
 #     AddKeysToAgent yes
 #     IdentityFile ~/.ssh/xavier_macbook_jigwe
 #     User xavier
-
-
 def verify_ssh_config_is_setup(hostname, ssh_dir="~/.ssh/", ssh_config_filename="config"):
     """
     Returns True/False if hostname is within the ssh config file.
@@ -39,16 +40,14 @@ def download_from_remote(connection: fabric.Connection, filepath: str):
     if not patchwork.files.exists(connection, filepath):
         raise FileNotFoundError(f"File '{filepath}' doesn't exist on remote '{connection.host}'.")
 
-    os.makedirs("downloads", exist_ok=True)
-    connection.get(filepath, local="downloads/")
+    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+    connection.get(filepath, local=DOWNLOAD_DIR)
     return True
 
 
-if __name__ == "__main__":
-    jigwe_hostname = "jigwe.kzoo.edu"
-
+def run_ssh_config_verification(hostname, ssh_dir="~/.ssh/", ssh_config_filename="config"):
     try:
-        ssh_config_setup = verify_ssh_config_is_setup(jigwe_hostname)
+        ssh_config_setup = verify_ssh_config_is_setup(hostname, ssh_dir=ssh_dir, ssh_config_filename=ssh_config_filename)
     except FileNotFoundError as e:
         ssh_config_setup = False
         print(e)
@@ -58,9 +57,23 @@ if __name__ == "__main__":
               f"See README for details on how to set it up.")
         sys.exit(0)
 
-    with fabric.Connection(host=jigwe_hostname) as jigwe:
-        download_from_remote(jigwe, "/scratch/xavier/virus_research/python/two_base_b0_b1_pickles/10_to_27_A4.pickle")
 
-    transition_pickle_manager = TransitionPickleManager(pickle_directory="downloads")
+def get_transitions_from_remote(start_gen_list, end_gen_list, centralizer_str, hostname):
+    run_ssh_config_verification(hostname)
 
-    print(transition_pickle_manager.load_transitions(10, 27, "A4"))
+    transition_pickle_manager = TransitionPickleManager(pickle_directory=DOWNLOAD_DIR)
+
+    remote_file = transition_pickle_manager.get_transition_pickle_filename(start_gen_list, end_gen_list, centralizer_str, exclude_dir=True)
+    remote_path = os.path.join("/scratch/xavier/virus_research/python/two_base_b0_b1_pickles/", remote_file)
+
+    with fabric.Connection(host=hostname) as remote:
+        download_from_remote(remote, remote_path)
+
+    return transition_pickle_manager.load_transitions(start_gen_list, end_gen_list, centralizer_str)
+
+
+if __name__ == "__main__":
+    jigwe_hostname = "jigwe.kzoo.edu"
+    run_ssh_config_verification(jigwe_hostname)
+
+    print(get_transitions_from_remote((1, 2), (3, 5), "D6", jigwe_hostname))

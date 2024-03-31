@@ -19,10 +19,14 @@ class PickleManager:
 
         self.pickle_directory = pickle_directory
 
-    def get_transition_pickle_filename(self, start_tuple, end_tuple, centralizer_string):
+    def get_transition_pickle_filename(self, start_tuple, end_tuple, centralizer_string, exclude_dir=False):
         centralizer_string = centralizer_string.upper()
         case_filename = re.sub('[()\[\] ]', '', f"{start_tuple}_to_{end_tuple}_{centralizer_string}.pickle")
-        return os.path.join(self.pickle_directory, case_filename)
+
+        if exclude_dir:
+            return case_filename
+        else:
+            return os.path.join(self.pickle_directory, case_filename)
 
     def transition_pickle_file_exists(self, start_tuple, end_tuple, centralizer_str):
         pickle_filename = self.get_transition_pickle_filename(start_tuple, end_tuple, centralizer_str)
