@@ -76,4 +76,18 @@ if __name__ == "__main__":
     jigwe_hostname = "jigwe.kzoo.edu"
     run_ssh_config_verification(jigwe_hostname)
 
-    print(get_transitions_from_remote((1, 2), (3, 5), "D6", jigwe_hostname))
+    a = input("Enter starting generating list as 'x,y,z,...'\n")
+    start_gen_list = tuple(int(x) for x in a.split(","))
+    if len(start_gen_list) == 1:
+        start_gen_list = start_gen_list[0]
+
+    a = input("Enter ending generating list as 'x,y,z,...'\n")
+    end_gen_list = tuple(int(x) for x in a.split(","))
+    if len(end_gen_list) == 1:
+        end_gen_list = end_gen_list[0]
+
+    centralizer_str = input("Enter centralizer string (A4, D10, D6)\n")
+    centralizer_str = centralizer_str.upper()
+
+    print(f"Getting transitions from {jigwe_hostname} for desired inputs...")
+    print(get_transitions_from_remote(start_gen_list, end_gen_list, centralizer_str, jigwe_hostname))
