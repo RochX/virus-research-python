@@ -3,6 +3,7 @@ import patchwork.files
 import sys
 import os
 
+from utils import input_checker
 from pickle_manager.pickle_manager import TransitionPickleManager
 DOWNLOAD_DIR = "downloads/"
 
@@ -72,22 +73,33 @@ def get_transitions_from_remote(start_gen_list, end_gen_list, centralizer_str, h
     return transition_pickle_manager.load_transitions(start_gen_list, end_gen_list, centralizer_str)
 
 
+def get_centralizer_string_input(input_msg):
+    while True:
+        user_input = input(input_msg).upper()
+        # Check the input condition
+        if input_checker.is_centralizer_string(user_input):
+            return user_input
+        else:
+            print("Invalid input. Please try again.")
+
+
+def get_generating_list_input(input_msg):
+    while True:
+        user_input = input(input_msg)
+        # Check the input condition
+        if input_checker.can_be_generating_list(user_input):
+            return input_checker.convert_to_generating_list(user_input)
+        else:
+            print("Invalid input. Please try again.")
+
+
 if __name__ == "__main__":
     jigwe_hostname = "jigwe.kzoo.edu"
     run_ssh_config_verification(jigwe_hostname)
 
-    a = input("Enter starting generating list as 'x,y,z,...'\n")
-    start_gen_list = tuple(int(x) for x in a.split(","))
-    if len(start_gen_list) == 1:
-        start_gen_list = start_gen_list[0]
-
-    a = input("Enter ending generating list as 'x,y,z,...'\n")
-    end_gen_list = tuple(int(x) for x in a.split(","))
-    if len(end_gen_list) == 1:
-        end_gen_list = end_gen_list[0]
-
-    centralizer_str = input("Enter centralizer string (A4, D10, D6)\n")
-    centralizer_str = centralizer_str.upper()
+    start_gen_list = get_generating_list_input("Enter starting generating list as 'x,y,z,...'\n")
+    end_gen_list = get_generating_list_input("Enter ending generating list as 'x,y,z,...'\n")
+    centralizer_str = get_centralizer_string_input("Enter centralizer string (A4, D10, D6)\n")
 
     print(f"Getting transitions from {jigwe_hostname} for desired inputs...")
     print(get_transitions_from_remote(start_gen_list, end_gen_list, centralizer_str, jigwe_hostname))
