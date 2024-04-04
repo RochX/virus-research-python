@@ -20,13 +20,16 @@ In order to retrieve results from Jigwe in a user-friendly fashion, the `ssh_get
 However, it order to use it, one must set up the SSH configuration file.
 This file is typically located in `~/.ssh/config`.
 If this file does not exist then create it (e.g. `touch ~/.ssh/config`).
-Then add the following lines to the SSH configuration file.
+Then add the following lines to the SSH configuration file:
 ```
 Host jigwe.kzoo.edu
     AddKeysToAgent yes
     IdentityFile ~/.ssh/MY_PRIVATE_KEY
     User MY_USER
 ```
+and replacing `MY_PRIVATE_KEY` with the path to your private key for Jigwe and `MY_USER` with the username you logon to Jigwe with.
 After doing this the program should work as expected.
 Note that one can manually verify that this worked by running `ssh jigwe.kzoo.edu`.
 If you have set up the configuration file correctly, this will now have the same effect as running `ssh USER@jigwe.kzoo.edu -i ~/.ssh/MY_PRIVATE_KEY`.
+
+See [https://linuxize.com/post/using-the-ssh-config-file/](https://linuxize.com/post/using-the-ssh-config-file/) for more information on setting up the SSH configuration file.
