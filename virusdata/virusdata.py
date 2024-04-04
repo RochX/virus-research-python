@@ -74,16 +74,20 @@ configs[54] = {BASE_STR: 2 * Dinv * Dinv * f, TRANSLATION_STR:  s}
 configs[55] = {BASE_STR: Dinv * f, TRANSLATION_STR:  s}
 
 
-def get_generators(tuple):
+def get_generators(tup):
     generators = []
-    for index, curr in enumerate(tuple):
+
+    if isinstance(tup, int):
+        tup = (tup,)
+
+    for index, curr in enumerate(tup):
         # add translation if it doesn't exist
         if index == 0:
             generators.append(configs[curr][TRANSLATION_STR])
 
         # check if the translation vectors match
         if configs[curr][TRANSLATION_STR] != generators[0]:
-            raise ValueError(f"Translation vectors of {curr} and {tuple[0]} do not match. The point array attempted is {tuple}.")
+            raise ValueError(f"Translation vectors of {curr} and {tup[0]} do not match. The point array attempted is {tup}.")
 
         generators.append(configs[curr][BASE_STR])
 

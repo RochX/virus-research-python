@@ -2,7 +2,7 @@ import unittest
 
 import sympy as sp
 
-from utils.generatinglist_utils import has_same_number_elements
+from utils.generatinglist_utils import has_same_number_elements, is_valid_generating_list
 from utils.input_checker import can_be_generating_list, convert_to_generating_list
 from utils.sympy_utils import equation_is_true_or_solvable
 
@@ -18,6 +18,12 @@ class GeneratingListUtilTests(unittest.TestCase):
         self.assertFalse(has_same_number_elements(10, {}))
         self.assertTrue(has_same_number_elements({}, {}))
         self.assertFalse(has_same_number_elements({1: 2}, {}))
+
+    def test_is_valid_generating_list(self):
+        self.assertTrue(is_valid_generating_list(1))
+        self.assertTrue(is_valid_generating_list((1,)))
+        self.assertTrue(is_valid_generating_list((1, 2)))
+        self.assertFalse(is_valid_generating_list((1, 10)))
 
 
 class InputCheckerTests(unittest.TestCase):
