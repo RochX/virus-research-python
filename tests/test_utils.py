@@ -3,7 +3,7 @@ import unittest
 import sympy as sp
 
 from utils.generatinglist_utils import has_same_number_elements, is_valid_generating_list
-from utils.input_checker import can_be_generating_list, convert_to_generating_list
+from utils.input_checker import can_be_int_tuple, convert_to_generating_list
 from utils.sympy_utils import equation_is_true_or_solvable
 
 
@@ -28,12 +28,12 @@ class GeneratingListUtilTests(unittest.TestCase):
 
 class InputCheckerTests(unittest.TestCase):
     """Test cases for input_checker.py."""
-    def test_can_be_generating_list(self):
-        self.assertTrue(can_be_generating_list(1))
-        self.assertTrue(can_be_generating_list((1, 2)))
-        self.assertFalse(can_be_generating_list("bad_string_input"))
-        self.assertTrue(can_be_generating_list("1"))
-        self.assertTrue(can_be_generating_list("(1, 2)"))
+    def test_can_be_int_tuple(self):
+        self.assertTrue(can_be_int_tuple(1))
+        self.assertTrue(can_be_int_tuple((1, 2)))
+        self.assertFalse(can_be_int_tuple("bad_string_input"))
+        self.assertTrue(can_be_int_tuple("1"))
+        self.assertTrue(can_be_int_tuple("(1, 2)"))
 
     def test_convert_to_generating_list(self):
         self.assertEqual(convert_to_generating_list(1), 1)

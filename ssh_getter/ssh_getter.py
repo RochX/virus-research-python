@@ -3,7 +3,7 @@ import patchwork.files
 import sys
 import os
 
-from utils import input_checker
+from utils import generatinglist_utils, input_checker
 from pickle_manager.pickle_manager import TransitionPickleManager
 DOWNLOAD_DIR = "downloads/"
 
@@ -86,9 +86,14 @@ def get_centralizer_string_input(input_msg):
 def get_generating_list_input(input_msg):
     while True:
         user_input = input(input_msg)
-        # Check the input condition
-        if input_checker.can_be_generating_list(user_input):
-            return input_checker.convert_to_generating_list(user_input)
+        # check if input can be converted properly
+        if input_checker.can_be_int_tuple(user_input):
+            # check input is an actual point array
+            possible_gen_list = input_checker.convert_to_generating_list(user_input)
+            if generatinglist_utils.is_valid_generating_list(possible_gen_list):
+                return possible_gen_list
+            else:
+                print("Point array is invalid (translation vector is not shared).")
         else:
             print("Invalid input. Please try again.")
 

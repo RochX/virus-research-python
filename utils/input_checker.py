@@ -5,13 +5,9 @@ def is_tuple_of_ints(var):
     return all(isinstance(item, int) for item in var)
 
 
-def is_generating_list(var):
-    return isinstance(var, int) or is_tuple_of_ints(var)
-
-
-def can_be_generating_list(var):
+def can_be_int_tuple(var):
     """
-    Checks whether `var` can be converted into a generating list
+    Checks whether `var` can be converted into a generating list and is a valid generating list
     :param var: The input to check.
     :return: True or False if `var` is an int or a tuple of ints
     """
