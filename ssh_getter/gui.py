@@ -158,9 +158,9 @@ class SSHGui:
             if self.ssh_config_is_setup:
                 self.ssh_info_label.configure(foreground="green", text=f"Your SSH configuration is setup for {self.hostname}!")
             else:
-                self.ssh_info_label.configure(foreground="red", text=f"Your SSH configuration is NOT setup for {self.hostname}!")
+                self.ssh_info_label.configure(foreground="red", text=f"Your SSH configuration is NOT setup for {self.hostname}!\nSee the README!")
         except FileNotFoundError:
-            self.ssh_info_label.configure(foreground="red", text="SSH configuration file does not exist!")
+            self.ssh_info_label.configure(foreground="red", text="SSH configuration file does not exist!\nSee the README!")
 
     def update_transition_display(self, *args):
         """
