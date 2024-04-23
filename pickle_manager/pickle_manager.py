@@ -20,6 +20,12 @@ class PickleManager:
         self.pickle_directory = pickle_directory
 
     def get_transition_pickle_filename(self, start_tuple, end_tuple, centralizer_string, exclude_dir=False):
+        # convert tuples of length 1 to ints
+        if hasattr(start_tuple, '__len__') and len(start_tuple) == 1:
+            start_tuple = start_tuple[0]
+        if hasattr(start_tuple, '__len__') and len(end_tuple) == 1:
+            end_tuple = end_tuple[0]
+
         centralizer_string = centralizer_string.upper()
         case_filename = re.sub('[()\[\] ]', '', f"{start_tuple}_to_{end_tuple}_{centralizer_string}.pickle")
 
