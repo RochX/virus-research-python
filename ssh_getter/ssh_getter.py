@@ -1,5 +1,6 @@
 import fabric
 import patchwork.files
+import re
 import sys
 import os
 
@@ -26,8 +27,8 @@ def verify_ssh_config_is_setup(hostname, ssh_dir="~/.ssh/", ssh_config_filename=
 
     with open(ssh_config_path, 'r') as ssh_config:
         ssh_config_contents = ssh_config.read()
-
-        return hostname in ssh_config_contents
+        hostname_regex = "Host\s*" + re.escape(hostname)
+        return re.search(hostname_regex, ssh_config_contents) is not None
 
 
 def download_from_remote(connection: fabric.Connection, filepath: str):
