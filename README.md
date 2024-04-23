@@ -33,3 +33,5 @@ Note that one can manually verify that this worked by running `ssh jigwe.kzoo.ed
 If you have set up the configuration file correctly, this will now have the same effect as running `ssh USER@jigwe.kzoo.edu -i ~/.ssh/MY_PRIVATE_KEY`.
 
 See [https://linuxize.com/post/using-the-ssh-config-file/](https://linuxize.com/post/using-the-ssh-config-file/) for more information on setting up the SSH configuration file.
+
+IMPORTANT NOTE: Because the `fabric` module relies on the `imp` module, the SSH getter **will not** work with Python 3.12 (at least until `fabric` is updated).
