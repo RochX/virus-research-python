@@ -44,7 +44,8 @@ class SSHGui:
         centralizer_selector = ttk.Combobox(data_input_frame,
                                             textvariable=self.centralizer_string,
                                             values=['A4', 'D10', 'D6'],
-                                            state='readonly')
+                                            state='readonly',
+                                            width=3)
         centralizer_selector.grid(row=25, column=0)
         centralizer_selector.bind('<<ComboboxSelected>>', lambda event: centralizer_selector.selection_clear())
         ttk.Label(data_input_frame, text="Select Symmetry").grid(row=25, column=1)
@@ -79,9 +80,20 @@ class SSHGui:
         b0_matrix_display = ttk.Label(transition_frame, textvariable=self.b0_matrix_string, borderwidth=2, relief='sunken', padding=1)
         b1_matrix_display = ttk.Label(transition_frame, textvariable=self.b1_matrix_string, borderwidth=2, relief='sunken', padding=1)
 
-        transition_matrix_display.grid(row=1, column=1, columnspan=10, padx=3, pady=3)
-        b0_matrix_display.grid(row=2, column=1, columnspan=10, padx=3, pady=3)
-        b1_matrix_display.grid(row=3, column=1, columnspan=10, padx=3, pady=3)
+        transition_matrix_display.grid(row=1, column=1, columnspan=1, padx=3, pady=3)
+        b0_matrix_display.grid(row=2, column=1, columnspan=1, padx=3, pady=3)
+        b1_matrix_display.grid(row=3, column=1, columnspan=1, padx=3, pady=3)
+
+        transition_clipboard_button = ttk.Button(transition_frame, text="Copy T to Clipboard",
+                                                 command=lambda: self.copy_into_clipboard(self.transition_matrix_string.get()))
+        b0_clipboard_button = ttk.Button(transition_frame, text="Copy B0 to Clipboard",
+                                         command=lambda: self.copy_into_clipboard(self.b0_matrix_string.get()))
+        b1_clipboard_button = ttk.Button(transition_frame, text="Copy B1 to Clipboard",
+                                         command=lambda: self.copy_into_clipboard(self.b1_matrix_string.get()))
+
+        transition_clipboard_button.grid(row=1, column=10, columnspan=10)
+        b0_clipboard_button.grid(row=2, column=10, columnspan=10)
+        b1_clipboard_button.grid(row=3, column=10, columnspan=10)
 
         # transition navigation
         self.remote_results = []  # will store the transitions retrieved from remote
@@ -89,11 +101,11 @@ class SSHGui:
         self.result_index.trace_add('write', self.update_transition_display)
 
         self.index_changer = ttk.Spinbox(transition_frame, from_=0, to=0, textvariable=self.result_index, width=3)
-        self.index_changer.grid(row=5, column=0)
+        self.index_changer.grid(row=5, column=10)
 
         self.num_results = tk.IntVar(value=0)
-        tk.Label(transition_frame, text="out of").grid(row=5, column=1)
-        tk.Label(transition_frame, textvariable=self.num_results).grid(row=5, column=2)
+        tk.Label(transition_frame, text="out of").grid(row=5, column=11)
+        tk.Label(transition_frame, textvariable=self.num_results).grid(row=5, column=12)
 
         # place the frames
         mainframe.place(relx=0.5, rely=0.5, anchor="center")
@@ -206,6 +218,10 @@ class SSHGui:
         """
         matrix_regex = "Matrix\((.*)\)"
         return re.fullmatch(matrix_regex, str(matrix)).group(1)
+
+    def copy_into_clipboard(self, string):
+        self.root.clipboard_clear()
+        self.root.clipboard_append(string)
 
 
 if __name__ == "__main__":
