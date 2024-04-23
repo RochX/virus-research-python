@@ -1,10 +1,13 @@
 import re
+import ssh_getter
 import tkinter as tk
 import tkinter.messagebox
 from tkinter import ttk
 
 
 class SSHGui:
+    hostname = "jigwe.kzoo.edu"
+
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Jigwe Transition Getter")
@@ -16,8 +19,11 @@ class SSHGui:
 
         # ssh config message
         ssh_info_frame = ttk.LabelFrame(mainframe, text="SSH Info")
-        self.ssh_config_message = tk.StringVar(value="Your SSH config is/is NOT setup!")
-        ttk.Label(ssh_info_frame, textvariable=self.ssh_config_message).grid(row=0, column=0, columnspan=10)
+        self.ssh_config_is_setup = False
+        self.ssh_info_label = ttk.Label(ssh_info_frame, text="RUN UPDATE SSH LABEL")
+        self.ssh_info_label.grid(row=0, column=0)
+        self.update_ssh_info_display()
+        ttk.Button(ssh_info_frame, text="Refresh Status", command=self.update_ssh_info_display).grid(row=0, column=1)
 
         ssh_info_frame.grid(row=0, column=0, columnspan=10)
 
@@ -70,8 +76,24 @@ class SSHGui:
         starting_pt_array = self.pt_array_str_to_tuple(self.starting_pt_array.get())
         ending_pt_array = self.pt_array_str_to_tuple(self.ending_pt_array.get())
 
+        if len(starting_pt_array) != len(ending_pt_array):
+            self.display_label.configure(foreground='red')
+            self.display_text.set("Point array lengths do not match.")
+            return
+
         self.display_label.configure(foreground='green')
         self.display_text.set(f"{starting_pt_array} --> {ending_pt_array}\nTODO GET TRANSITIONS")
+
+    def update_ssh_info_display(self):
+        try:
+            self.ssh_config_is_setup = ssh_getter.verify_ssh_config_is_setup(self.hostname)
+            if self.ssh_config_is_setup:
+                self.ssh_info_label.configure(foreground="green", text=f"Your SSH configuration is setup for {self.hostname}!")
+            else:
+                self.ssh_info_label.configure(foreground="red", text=f"Your SSH configuration is NOT setup for {self.hostname}!")
+        except FileNotFoundError:
+            self.ssh_info_label.configure(foreground="red", text="SSH configuration file does not exist!")
+
 
     def validate_pt_array_string(self, pt_array_string):
         """
