@@ -40,6 +40,15 @@ class SSHGui:
         ttk.Entry(data_input_frame, textvariable=self.ending_pt_array, validate='key', validatecommand=(validate_pt_array_string_wrapper, '%P')).grid(row=20, column=0)
         ttk.Label(data_input_frame, text="Enter ending point array").grid(row=20, column=1)
 
+        self.centralizer_string = tk.StringVar()
+        centralizer_selector = ttk.Combobox(data_input_frame,
+                                            textvariable=self.centralizer_string,
+                                            values=['A4', 'D10', 'D6'],
+                                            state='readonly')
+        centralizer_selector.grid(row=25, column=0)
+        centralizer_selector.bind('<<ComboboxSelected>>', lambda event: centralizer_selector.selection_clear())
+        ttk.Label(data_input_frame, text="Select Symmetry").grid(row=25, column=1)
+
         # getting transitions!
         ttk.Button(data_input_frame, text="Get Transitions!", command=self.get_transitions_on_click).grid(row=30, column=0, columnspan=2)
 
@@ -73,6 +82,11 @@ class SSHGui:
             self.display_text.set("Please set value for both point arrays.")
             return
 
+        if self.centralizer_string.get() == "":
+            self.display_label.configure(foreground='red')
+            self.display_text.set("Please set value for symmetry.")
+            return
+
         starting_pt_array = self.pt_array_str_to_tuple(self.starting_pt_array.get())
         ending_pt_array = self.pt_array_str_to_tuple(self.ending_pt_array.get())
 
@@ -82,7 +96,7 @@ class SSHGui:
             return
 
         self.display_label.configure(foreground='green')
-        self.display_text.set(f"{starting_pt_array} --> {ending_pt_array}\nTODO GET TRANSITIONS")
+        self.display_text.set(f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.\nTODO GET TRANSITIONS")
 
     def update_ssh_info_display(self):
         try:
@@ -106,6 +120,9 @@ class SSHGui:
         return re.fullmatch(pt_array_regex, pt_array_string) is not None or pt_array_string == ""
 
     def pt_array_str_to_tuple(self, string):
+        if string[-1] == ',':
+            string = string[:-1]
+
         return tuple(map(int, string.split(",")))
 
 
