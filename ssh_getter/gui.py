@@ -74,7 +74,7 @@ class SSHGui:
         """
         pt_array_regex = "[1-9]+(?:,[1-9]+)*,?"
 
-        return re.match(pt_array_regex, pt_array_string) is not None
+        return re.fullmatch(pt_array_regex, pt_array_string) is not None or pt_array_string == ""
 
 
 if __name__ == "__main__":
