@@ -135,18 +135,16 @@ class SSHGui:
             self.num_results.set(len(self.remote_results))
 
             if len(self.remote_results) == 0:
-                first_result = ["None"]*5
+                self.result_index.set(0)
                 self.index_changer['from'] = 0
                 self.index_changer['to'] = 0
             else:
-                first_result = self.remote_results[0]
+                self.result_index.set(1)
                 self.index_changer['from'] = 1
                 self.index_changer['to'] = self.num_results.get()
 
             self.transition_status.set(f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.")
-            self.transition_matrix_string.set(first_result[2])
-            self.b0_matrix_string.set(first_result[3])
-            self.b1_matrix_string.set(first_result[4])
+            self.update_transition_display()
 
             self.display_label.configure(foreground='green')
             self.display_text.set("Successfully retrieved from Jigwe!")
@@ -173,14 +171,16 @@ class SSHGui:
         # add *args because trace_add adds unneeded arguments
         # we want the display to be 1 indexed so we subtract 1 here
         result_index = self.result_index.get()-1
-        print(self.index_changer['from'], self.index_changer['to'], self.result_index.get())
         if self.num_results.get() == 0:
+            self.transition_matrix_string.set("None")
+            self.b0_matrix_string.set("None")
+            self.b1_matrix_string.set("None")
             return
 
         curr_result = self.remote_results[result_index]
-        self.transition_matrix_string.set(curr_result[2])
-        self.b0_matrix_string.set(curr_result[3])
-        self.b1_matrix_string.set(curr_result[4])
+        self.transition_matrix_string.set(self.create_formatted_sympy_matrix_string(curr_result[2]))
+        self.b0_matrix_string.set(self.create_formatted_sympy_matrix_string(curr_result[3]))
+        self.b1_matrix_string.set(self.create_formatted_sympy_matrix_string(curr_result[4]))
 
     def validate_pt_array_string(self, pt_array_string):
         """
@@ -197,6 +197,15 @@ class SSHGui:
             string = string[:-1]
 
         return tuple(map(int, string.split(",")))
+
+    def create_formatted_sympy_matrix_string(self, matrix):
+        """
+        Takes a sympy matrix and returns its nested list form (without the 'Matrix(...)' business)
+        :param matrix:
+        :return:
+        """
+        matrix_regex = "Matrix\((.*)\)"
+        return re.fullmatch(matrix_regex, str(matrix)).group(1)
 
 
 if __name__ == "__main__":
