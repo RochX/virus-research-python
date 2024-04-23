@@ -79,9 +79,21 @@ class SSHGui:
         b0_matrix_display = ttk.Label(transition_frame, textvariable=self.b0_matrix_string, borderwidth=2, relief='sunken', padding=1)
         b1_matrix_display = ttk.Label(transition_frame, textvariable=self.b1_matrix_string, borderwidth=2, relief='sunken', padding=1)
 
-        transition_matrix_display.grid(row=1, column=1, padx=3, pady=3)
-        b0_matrix_display.grid(row=2, column=1, padx=3, pady=3)
-        b1_matrix_display.grid(row=3, column=1, padx=3, pady=3)
+        transition_matrix_display.grid(row=1, column=1, columnspan=10, padx=3, pady=3)
+        b0_matrix_display.grid(row=2, column=1, columnspan=10, padx=3, pady=3)
+        b1_matrix_display.grid(row=3, column=1, columnspan=10, padx=3, pady=3)
+
+        # transition navigation
+        self.remote_results = []  # will store the transitions retrieved from remote
+        self.result_index = tk.IntVar(value=0)
+        self.result_index.trace_add('write', self.update_transition_display)
+
+        self.index_changer = ttk.Spinbox(transition_frame, from_=0, to=0, textvariable=self.result_index, width=3)
+        self.index_changer.grid(row=5, column=0)
+
+        self.num_results = tk.IntVar(value=0)
+        tk.Label(transition_frame, text="out of").grid(row=5, column=1)
+        tk.Label(transition_frame, textvariable=self.num_results).grid(row=5, column=2)
 
         # place the frames
         mainframe.place(relx=0.5, rely=0.5, anchor="center")
@@ -117,22 +129,27 @@ class SSHGui:
         if len(ending_pt_array) == 1:
             ending_pt_array = ending_pt_array[0]
 
-        self.display_label.configure(foreground='green')
-        self.display_text.set(f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.\nTODO GET TRANSITIONS")
-
         # try to get the results from remote
         try:
-            remote_results = ssh_getter.get_transitions_from_remote(starting_pt_array, ending_pt_array, self.centralizer_string.get(), hostname=self.hostname)
+            self.remote_results = ssh_getter.get_transitions_from_remote(starting_pt_array, ending_pt_array, self.centralizer_string.get(), hostname=self.hostname)
+            self.num_results.set(len(self.remote_results))
 
-            if len(remote_results) == 0:
+            if len(self.remote_results) == 0:
                 first_result = ["None"]*5
+                self.index_changer['from'] = 0
+                self.index_changer['to'] = 0
             else:
-                first_result = remote_results[0]
+                first_result = self.remote_results[0]
+                self.index_changer['from'] = 1
+                self.index_changer['to'] = self.num_results.get()
 
-            self.transition_status.set(f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.\nCURRENTLY ONLY GETS FIRST TRANSITION FOUND.")
+            self.transition_status.set(f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.")
             self.transition_matrix_string.set(first_result[2])
             self.b0_matrix_string.set(first_result[3])
             self.b1_matrix_string.set(first_result[4])
+
+            self.display_label.configure(foreground='green')
+            self.display_text.set("Successfully retrieved from Jigwe!")
         except FileNotFoundError:
             self.display_label.configure(foreground='red')
             self.display_text.set(f"Transition file for {starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry does not exist on {self.hostname}.")
@@ -147,6 +164,23 @@ class SSHGui:
         except FileNotFoundError:
             self.ssh_info_label.configure(foreground="red", text="SSH configuration file does not exist!")
 
+    def update_transition_display(self, *args):
+        """
+        Updates the displayed T, B0, B1 with what is specified by remote results and index.
+        To be run whenever result_index changes.
+        :return:
+        """
+        # add *args because trace_add adds unneeded arguments
+        # we want the display to be 1 indexed so we subtract 1 here
+        result_index = self.result_index.get()-1
+        print(self.index_changer['from'], self.index_changer['to'], self.result_index.get())
+        if self.num_results.get() == 0:
+            return
+
+        curr_result = self.remote_results[result_index]
+        self.transition_matrix_string.set(curr_result[2])
+        self.b0_matrix_string.set(curr_result[3])
+        self.b1_matrix_string.set(curr_result[4])
 
     def validate_pt_array_string(self, pt_array_string):
         """
