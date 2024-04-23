@@ -35,11 +35,11 @@ class SSHGui:
         ttk.Label(data_input_frame, text="Enter ending point array").grid(row=20, column=1)
 
         # getting transitions!
-        ttk.Button(data_input_frame, text="Get Transitions!", command=self.update_display).grid(row=30, column=0, columnspan=2)
+        ttk.Button(data_input_frame, text="Get Transitions!", command=self.get_transitions_on_click).grid(row=30, column=0, columnspan=2)
 
         self.display_text = tk.StringVar(value="Not printed")
-        display_label = tk.Label(data_input_frame, textvariable=self.display_text)
-        display_label.grid(row=40, column=0, columnspan=2)
+        self.display_label = tk.Label(data_input_frame, textvariable=self.display_text)
+        self.display_label.grid(row=40, column=0, columnspan=2)
 
         data_input_frame.grid(row=20, column=0, columnspan=10)
 
@@ -57,14 +57,21 @@ class SSHGui:
         # run main loop
         self.root.mainloop()
 
-    def update_display(self):
-        starting_pt_array = self.starting_pt_array.get()
-        ending_pt_array = self.ending_pt_array.get()
+    def get_transitions_on_click(self):
+        """
+        Update display and process when the "Get Transitions" button is clicked.
+        :return:
+        """
+        if self.starting_pt_array.get() == "" or self.ending_pt_array.get() == "":
+            self.display_label.configure(foreground='red')
+            self.display_text.set("Please set value for both point arrays.")
+            return
 
-        if starting_pt_array == "" or ending_pt_array == "":
-            tkinter.messagebox.Message(self.root, message="Please set value for point arrays.").show()
-        else:
-            self.display_text.set(f"{starting_pt_array} --> {ending_pt_array}")
+        starting_pt_array = self.pt_array_str_to_tuple(self.starting_pt_array.get())
+        ending_pt_array = self.pt_array_str_to_tuple(self.ending_pt_array.get())
+
+        self.display_label.configure(foreground='green')
+        self.display_text.set(f"{starting_pt_array} --> {ending_pt_array}\nTODO GET TRANSITIONS")
 
     def validate_pt_array_string(self, pt_array_string):
         """
@@ -75,6 +82,9 @@ class SSHGui:
         pt_array_regex = "[1-9]+(?:,[1-9]+)*,?"
 
         return re.fullmatch(pt_array_regex, pt_array_string) is not None or pt_array_string == ""
+
+    def pt_array_str_to_tuple(self, string):
+        return tuple(map(int, string.split(",")))
 
 
 if __name__ == "__main__":
