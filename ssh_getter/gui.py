@@ -11,7 +11,7 @@ class SSHGui:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Jigwe Transition Getter")
-        self.root.geometry('700x500')
+        self.root.geometry('1500x500')
 
         # mainframe
         mainframe = ttk.Frame(self.root, padding="3 3 12 12")
@@ -62,9 +62,26 @@ class SSHGui:
         transition_frame = ttk.LabelFrame(mainframe, text="Transitions:", borderwidth="20", relief="sunken", padding="5")
         transition_frame.grid(row=60, column=0)
 
-        transition_status = tk.StringVar(value="No data yet.")
-        transition_status_label = ttk.Label(transition_frame, textvariable=transition_status)
-        transition_status_label.grid(row=1, column=0)
+        self.transition_status = tk.StringVar(value="No data yet.")
+        transition_status_label = ttk.Label(transition_frame, textvariable=self.transition_status)
+        transition_status_label.grid(row=0, column=0, columnspan=10)
+
+        # labels for transition frame
+        ttk.Label(transition_frame, text="T: ").grid(row=1, column=0)
+        ttk.Label(transition_frame, text="B0:").grid(row=2, column=0)
+        ttk.Label(transition_frame, text="B1:").grid(row=3, column=0)
+
+        self.transition_matrix_string = tk.StringVar(value="T will be here")
+        self.b0_matrix_string = tk.StringVar(value="B0 will be here")
+        self.b1_matrix_string = tk.StringVar(value="B1 will be here")
+
+        transition_matrix_display = ttk.Label(transition_frame, textvariable=self.transition_matrix_string, borderwidth=2, relief='sunken', padding=1)
+        b0_matrix_display = ttk.Label(transition_frame, textvariable=self.b0_matrix_string, borderwidth=2, relief='sunken', padding=1)
+        b1_matrix_display = ttk.Label(transition_frame, textvariable=self.b1_matrix_string, borderwidth=2, relief='sunken', padding=1)
+
+        transition_matrix_display.grid(row=1, column=1, padx=3, pady=3)
+        b0_matrix_display.grid(row=2, column=1, padx=3, pady=3)
+        b1_matrix_display.grid(row=3, column=1, padx=3, pady=3)
 
         # place the frames
         mainframe.place(relx=0.5, rely=0.5, anchor="center")
@@ -95,8 +112,30 @@ class SSHGui:
             self.display_text.set("Point array lengths do not match.")
             return
 
+        if len(starting_pt_array) == 1:
+            starting_pt_array = starting_pt_array[0]
+        if len(ending_pt_array) == 1:
+            ending_pt_array = ending_pt_array[0]
+
         self.display_label.configure(foreground='green')
         self.display_text.set(f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.\nTODO GET TRANSITIONS")
+
+        # try to get the results from remote
+        try:
+            remote_results = ssh_getter.get_transitions_from_remote(starting_pt_array, ending_pt_array, self.centralizer_string.get(), hostname=self.hostname)
+
+            if len(remote_results) == 0:
+                first_result = ["None"]*5
+            else:
+                first_result = remote_results[0]
+
+            self.transition_status.set(f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.\nCURRENTLY ONLY GETS FIRST TRANSITION FOUND.")
+            self.transition_matrix_string.set(first_result[2])
+            self.b0_matrix_string.set(first_result[3])
+            self.b1_matrix_string.set(first_result[4])
+        except FileNotFoundError:
+            self.display_label.configure(foreground='red')
+            self.display_text.set(f"Transition file for {starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry does not exist on {self.hostname}.")
 
     def update_ssh_info_display(self):
         try:
@@ -115,7 +154,7 @@ class SSHGui:
         :param pt_array_string:
         :return:
         """
-        pt_array_regex = "[1-9]+(?:,[1-9]+)*,?"
+        pt_array_regex = "[0-9]+(?:,[0-9]+)*,?"
 
         return re.fullmatch(pt_array_regex, pt_array_string) is not None or pt_array_string == ""
 
