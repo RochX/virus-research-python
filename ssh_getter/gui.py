@@ -99,7 +99,7 @@ class SSHGui:
 
         # transition navigation
         self.remote_results = []  # will store the transitions retrieved from remote
-        self.result_index = tk.IntVar(value=0)
+        self.result_index = tk.StringVar()
         self.result_index.trace_add('write', self.update_transition_display)
 
         self.index_changer = ttk.Spinbox(transition_frame, from_=0, to=0, textvariable=self.result_index, width=3)
@@ -188,7 +188,7 @@ class SSHGui:
         :return:
         """
         # add *args because trace_add adds unneeded arguments
-        if self.num_results.get() == 0:
+        if self.num_results.get() == 0 or self.result_index.get() == "":
             self.transition_matrix_string.set("None")
             self.b0_matrix_string.set("None")
             self.b1_matrix_string.set("None")
@@ -196,7 +196,7 @@ class SSHGui:
             return
 
         # we want the display to be 1 indexed so we subtract 1 here
-        result_index = self.result_index.get() - 1
+        result_index = int(self.result_index.get()) - 1
         curr_result = self.remote_results[result_index]
         self.transition_matrix_string.set(self.create_formatted_sympy_matrix_string(curr_result[2]))
         self.b0_matrix_string.set(self.create_formatted_sympy_matrix_string(curr_result[3]))
@@ -215,7 +215,7 @@ class SSHGui:
         """
         sp.preview(equation, viewer="file", filename="latex.png", dvioptions=['-D', '1200', "-M", "100"], euler=False)
         image = Image.open("latex.png")
-        image = ImageOps.contain(image, (1000, 500))
+        image = ImageOps.contain(image, (1000, 200))
 
         # specify padding
         padx = 10
