@@ -1,5 +1,7 @@
+from PIL import Image, ImageOps, ImageTk
 import re
 import ssh_getter
+import sympy as sp
 import tkinter as tk
 import tkinter.messagebox
 from tkinter import ttk
@@ -11,7 +13,7 @@ class SSHGui:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Jigwe Transition Getter")
-        self.root.geometry('1500x500')
+        self.root.geometry('1920x1080')
 
         # mainframe
         mainframe = ttk.Frame(self.root, padding="3 3 12 12")
@@ -107,6 +109,11 @@ class SSHGui:
         tk.Label(transition_frame, text="out of").grid(row=5, column=11)
         tk.Label(transition_frame, textvariable=self.num_results).grid(row=5, column=12)
 
+        # image
+        self.equation_image = tk.Label(transition_frame)
+        self.equation_image.grid(row=10, column=0, columnspan=20)
+        self.update_equation_image(r'Equation will be here.')
+
         # place the frames
         mainframe.place(relx=0.5, rely=0.5, anchor="center")
 
@@ -181,18 +188,52 @@ class SSHGui:
         :return:
         """
         # add *args because trace_add adds unneeded arguments
-        # we want the display to be 1 indexed so we subtract 1 here
-        result_index = self.result_index.get()-1
         if self.num_results.get() == 0:
             self.transition_matrix_string.set("None")
             self.b0_matrix_string.set("None")
             self.b1_matrix_string.set("None")
+            self.update_equation_image("None")
             return
 
+        # we want the display to be 1 indexed so we subtract 1 here
+        result_index = self.result_index.get() - 1
         curr_result = self.remote_results[result_index]
         self.transition_matrix_string.set(self.create_formatted_sympy_matrix_string(curr_result[2]))
         self.b0_matrix_string.set(self.create_formatted_sympy_matrix_string(curr_result[3]))
         self.b1_matrix_string.set(self.create_formatted_sympy_matrix_string(curr_result[4]))
+
+        equation = (f"$${sp.latex(curr_result[2], fold_short_frac=True)}\cdot"
+                    f"{sp.latex(curr_result[3], fold_short_frac=True)} = "
+                    f"{sp.latex(curr_result[4], fold_short_frac=True)}$$")
+        self.update_equation_image(equation)
+
+    def update_equation_image(self, equation):
+        """
+        Creates image from a LaTeX equation, resizes it, pads it, then updates the label.
+        :param equation: String representing a LaTeX equation
+        :return:
+        """
+        sp.preview(equation, viewer="file", filename="latex.png", dvioptions=['-D', '1200', "-M", "100"], euler=False)
+        image = Image.open("latex.png")
+        image = ImageOps.contain(image, (1000, 500))
+
+        # specify padding
+        padx = 10
+        pady = 10
+
+        # create padding
+        width, height = image.size
+        new_width = width + padx*2
+        new_height = height + pady*2
+        result = Image.new(image.mode, (new_width, new_height), color='white')
+        result.paste(image, (padx, pady))
+
+        # put image into Tk image
+        image = ImageTk.PhotoImage(result)
+
+        # configure label
+        self.equation_image.configure(image=image)
+        self.equation_image.image = image
 
     def validate_pt_array_string(self, pt_array_string):
         """

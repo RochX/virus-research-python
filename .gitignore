@@ -170,3 +170,6 @@ cython_debug/
 
 # ignore any nohup output
 **.out
+
+# ignore generated latex image for the gui
+ssh_getter/latex.png
