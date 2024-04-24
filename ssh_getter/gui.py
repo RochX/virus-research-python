@@ -78,7 +78,7 @@ class SSHGui:
         self.b0_matrix_string = tk.StringVar(value="B0 will be here")
         self.b1_matrix_string = tk.StringVar(value="B1 will be here")
 
-        transition_matrix_display = ttk.Label(transition_frame, textvariable=self.transition_matrix_string, borderwidth=2, relief='sunken', padding=1)
+        transition_matrix_display = ttk.Label(transition_frame, textvariable=self.transition_matrix_string, borderwidth=2, relief='sunken', padding=1, wraplength=1000, justify='left')
         b0_matrix_display = ttk.Label(transition_frame, textvariable=self.b0_matrix_string, borderwidth=2, relief='sunken', padding=1)
         b1_matrix_display = ttk.Label(transition_frame, textvariable=self.b1_matrix_string, borderwidth=2, relief='sunken', padding=1)
 
