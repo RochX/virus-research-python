@@ -66,8 +66,8 @@ class SSHGui:
         transition_frame.grid(row=60, column=0)
 
         self.transition_status = tk.StringVar(value="No data yet.")
-        transition_status_label = ttk.Label(transition_frame, textvariable=self.transition_status)
-        transition_status_label.grid(row=0, column=0, columnspan=10)
+        self.transition_status_label = ttk.Label(transition_frame, textvariable=self.transition_status)
+        self.transition_status_label.grid(row=0, column=0, columnspan=10)
 
         # labels for transition frame
         ttk.Label(transition_frame, text="T: ").grid(row=1, column=0)
@@ -151,6 +151,19 @@ class SSHGui:
         # try to get the results from remote
         try:
             self.remote_results = ssh_getter.get_transitions_from_remote(starting_pt_array, ending_pt_array, self.centralizer_string.get(), hostname=self.hostname)
+            old_results = isinstance(self.remote_results, tuple)
+
+            if old_results:
+                self.remote_results = [self.remote_results]
+                self.transition_status_label.configure(foreground='red')
+                self.transition_status.set(
+                    f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.\n"
+                    f"Note that these are OLD results.")
+            else:
+                self.transition_status_label.configure(foreground='')
+                self.transition_status.set(
+                    f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.\n")
+
             self.num_results.set(len(self.remote_results))
 
             if len(self.remote_results) == 0:
@@ -162,7 +175,6 @@ class SSHGui:
                 self.index_changer['from'] = 1
                 self.index_changer['to'] = self.num_results.get()
 
-            self.transition_status.set(f"{starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry.")
             self.update_transition_display()
 
             self.display_label.configure(foreground='green')
