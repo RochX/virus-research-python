@@ -86,6 +86,8 @@ class SSHGui:
         b0_matrix_display.grid(row=2, column=1, columnspan=1, padx=3, pady=3)
         b1_matrix_display.grid(row=3, column=1, columnspan=1, padx=3, pady=3)
 
+        copy_all_clipboard_button = ttk.Button(transition_frame, text="Copy all equations to Clipboard",
+                                               command=lambda: self.copy_into_clipboard(self.get_all_equations_as_str()))
         transition_clipboard_button = ttk.Button(transition_frame, text="Copy T to Clipboard",
                                                  command=lambda: self.copy_into_clipboard(self.transition_matrix_string.get()))
         b0_clipboard_button = ttk.Button(transition_frame, text="Copy B0 to Clipboard",
@@ -93,6 +95,7 @@ class SSHGui:
         b1_clipboard_button = ttk.Button(transition_frame, text="Copy B1 to Clipboard",
                                          command=lambda: self.copy_into_clipboard(self.b1_matrix_string.get()))
 
+        copy_all_clipboard_button.grid(row=0, column=10, columnspan=10)
         transition_clipboard_button.grid(row=1, column=10, columnspan=10)
         b0_clipboard_button.grid(row=2, column=10, columnspan=10)
         b1_clipboard_button.grid(row=3, column=10, columnspan=10)
@@ -271,6 +274,15 @@ class SSHGui:
         """
         matrix_regex = "Matrix\((.*)\)"
         return re.fullmatch(matrix_regex, str(matrix)).group(1)
+
+    def get_all_equations_as_str(self):
+        strings = []
+        for result in self.remote_results:
+            equation_tuple = (result[2], result[3], result[4])
+            equation_strings = str(tuple(map(self.create_formatted_sympy_matrix_string, equation_tuple)))
+            strings.append(equation_strings)
+
+        return '[' + ",\n".join(strings).replace("\'", "") + ']'
 
     def copy_into_clipboard(self, string):
         self.root.clipboard_clear()
