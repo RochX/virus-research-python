@@ -6,7 +6,23 @@ The research involves finding transitions between states of icosahedral viruses 
 Finding these transitions involves solving matrix equations of the form `TB_0 = B_1` for `T`.
 `T` is a general form of a 6x6 matrix which depends on which symmetry we are searching for.
 
-## Installation
+## Installation of Python
+### MacOS
+For whatever reason, the Python default installed on MacOS doesn't support `tkinter`.
+In order to work around this we will install Python directly from [Python.org](https://python.org).
+Go to the website and download Python **version 3.11**.
+
+!! IMPORTANT TO DOWNLOAD 3.11 FOR THIS PROJECT !!
+
+Run the installer.
+
+Next we need to add it onto our path.
+In my case it was at `/Library/Frameworks/Python.framework/Versions/3.11/bin`.
+So running `export PATH="/Library/Frameworks/Python.framework/Versions/3.11/bin:$PATH"` makes sure my default version of `python3` is this one.
+
+As a final test, if running `python3 -m tkinter` works and pops up a simple GUI, then you've installed Python correctly.
+
+#### Requirments.txt
 This is a Python repo, so all package requirements are in `requirements.txt` for `pip3` usage.
 After cloning, running `pip3 install -r requirements.txt` will install the necessary Python modules needed.
 
