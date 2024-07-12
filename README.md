@@ -36,7 +36,6 @@ See [https://linuxize.com/post/using-the-ssh-config-file/](https://linuxize.com/
 
 IMPORTANT NOTE: Because the `fabric` module relies on the `imp` module, the SSH getter **will not** work with Python 3.12 (at least until `fabric` is updated).
 
-## GUI
-The `gui` folder is a graphical interface for the SSH getter.
+### GUI
+The `gui.py` folder is a graphical interface for the SSH getter.
 It uses the `tkinter` module for creating the interface.
-`gui.py` contains the main function for the graphical interface.
