@@ -1,5 +1,5 @@
 # virus-research-python
-This repository is for the research that I (Xavier Silva) am doing from Summer 2023 - present.
+This repository is for the research that I (Xavier Silva) am doing from Summer 2023 - Summer 2024.
 
 ## The Research
 The research involves finding transitions between states of icosahedral viruses that preserve various types of icosahedral symmetry.
@@ -35,3 +35,8 @@ If you have set up the configuration file correctly, this will now have the same
 See [https://linuxize.com/post/using-the-ssh-config-file/](https://linuxize.com/post/using-the-ssh-config-file/) for more information on setting up the SSH configuration file.
 
 IMPORTANT NOTE: Because the `fabric` module relies on the `imp` module, the SSH getter **will not** work with Python 3.12 (at least until `fabric` is updated).
+
+## GUI
+The `gui` folder is a graphical interface for the SSH getter.
+It uses the `tkinter` module for creating the interface.
+`gui.py` contains the main function for the graphical interface.
