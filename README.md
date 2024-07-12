@@ -16,7 +16,7 @@ Running any of them with the `-h` or `--help` flag with give more information on
 
 ## SSH Getter
 This code has been running remotely on the Kalamazoo College supercomputing cluster Jigwe (pronouced 'Cheekua', Potawatomi for Thunderbird).
-In order to retrieve results from Jigwe in a user-friendly fashion, the `ssh_getter.py` code allows one to get results from Jigwe.
+In order to retrieve results from Jigwe in a user-friendly fashion, the `ssh_getter/ssh_getter.py` code allows one to get results from Jigwe.
 However, it order to use it, one must set up the SSH configuration file.
 This file is typically located in `~/.ssh/config`.
 If this file does not exist then create it (e.g. `touch ~/.ssh/config`).
@@ -37,5 +37,6 @@ See [https://linuxize.com/post/using-the-ssh-config-file/](https://linuxize.com/
 IMPORTANT NOTE: Because the `fabric` module relies on the `imp` module, the SSH getter **will not** work with Python 3.12 (at least until `fabric` is updated).
 
 ### GUI
-The `gui.py` folder is a graphical interface for the SSH getter.
-It uses the `tkinter` module for creating the interface.
+The `ssh_getter/gui.py` is a graphical interface program for the SSH getter.
+It uses the `tkinter` module for creating the interface, so make sure `tkinter` is installed.
+Running the command `python3 -m tkinter` can be used to check that `tkinter` is installed properly.
