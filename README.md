@@ -6,6 +6,12 @@ The research involves finding transitions between states of icosahedral viruses 
 Finding these transitions involves solving matrix equations of the form `TB_0 = B_1` for `T`.
 `T` is a general form of a 6x6 matrix which depends on which symmetry we are searching for.
 
+## Installation
+This is a Python repo, so all package requirements are in `requirements.txt` for `pip3` usage.
+After cloning, running `pip3 install -r requirements.txt` will install the necessary Python modules needed.
+
+IMPORTANT NOTE: Because the `fabric` module relies on the `imp` module, the SSH getter **will not** work with Python 3.12 (at least until `fabric` is updated).
+
 ## How To Use The Program
 This repository consists of one main python script to run and two helper python scripts.
 The main script is `combineorderedtuples.py`.
