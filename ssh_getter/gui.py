@@ -181,7 +181,7 @@ class SSHGui:
             self.update_transition_display()
 
             self.display_label.configure(foreground='green')
-            self.display_text.set("Successfully retrieved from Jigwe!")
+            self.display_text.set("Successfully retrieved from Jigwe!\nResults from folder: /scratch/xavier/virus_research/python/two_base_b0_b1_pickles/")
         except FileNotFoundError:
             self.display_label.configure(foreground='red')
             self.display_text.set(f"Transition file for {starting_pt_array} --> {ending_pt_array} under {self.centralizer_string.get()} symmetry does not exist on {self.hostname}.")
